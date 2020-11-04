@@ -32,6 +32,8 @@ namespace Cyvax;
 use Exception;
 use Tuupola\Base58;
 
+class PrivatebinException extends Exception {}
+
 class PrivatebinPHP
 {
     private $options = [
@@ -66,14 +68,15 @@ class PrivatebinPHP
      * set paste password
      * @param string $formatter
      * @param bool $bypass
+     * @throws PrivatebinException
      */
     public function set_formatter(string $formatter, bool $bypass = false)
     {
         if (in_array($formatter, ["plaintext", "syntaxhighlighting", "markdown"]) || $bypass) {
             $this->options = array_merge($this->options, ["formatter" => $formatter]);
-        } else {
-            trigger_error('$formatter not in default value and $bypass is false, using default value...', E_USER_WARNING);
+            return;
         }
+        throw new PrivatebinException('$formatter not in default value and $bypass is false');
     }
 
     /**
@@ -91,7 +94,7 @@ class PrivatebinPHP
                 $mime = "application/octet-stream";
             }
             $data = "data:" . $mime . ";base64," . base64_encode($file);
-            if (is_null($filename)) {
+            if ($filename === null) {
                 $name = basename($file_location);
             } else {
                 $name = $filename;
@@ -108,17 +111,19 @@ class PrivatebinPHP
     {
         $this->options["text"] = $text;
     }
+
     /**
      * set compression method
      * @param string $compression : zlib or none
+     * @throws PrivatebinException
      */
     public function set_compression(string $compression)
     {
         if (in_array($compression, ["zlib", "none"])) {
             $this->options = array_merge($this->options, ["compression" => $compression]);
-        } else {
-            trigger_error('Unknown compression type, (zlib or none)...', E_USER_ERROR);
+            return;
         }
+        throw new PrivatebinException('Unknown compression type, (zlib or none)...');
     }
 
     /**
@@ -152,14 +157,15 @@ class PrivatebinPHP
      * use bypass for value not in ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]. (default : false)
      * @param string $expire
      * @param bool $bypass
+     * @throws PrivatebinException
      */
     public function set_expire(string $expire, bool $bypass = false)
     {
         if (in_array($expire, ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]) || $bypass) {
             $this->options = array_merge($this->options, ["expire" => $expire]);
-        } else {
-            trigger_error('$expire not in default value and $bypass is false, using default value...', E_USER_WARNING);
+            return;
         }
+        throw new PrivatebinException('$expire not in default value and $bypass is false, using default value...');
     }
 
     /**
@@ -169,7 +175,7 @@ class PrivatebinPHP
     private function get_paste_data(): array
     {
         $paste_data = ["paste" => $this->options["text"]];
-        if (!is_null($this->options["attachment"])) {
+        if (!($this->options["attachment"] === null)) {
             $paste_data = array_merge($paste_data, ["attachment" => $this->options["attachment"], "attachment_name" => $this->options["attachment_name"]]);
         }
         return $paste_data;
@@ -178,72 +184,76 @@ class PrivatebinPHP
     /**
      * Encode string to a paste, return http post requests data with b58 key.
      * @return array|Exception[]
+     * @throws PrivatebinException
      */
     public function encode(): array
     {
         $base58 = new Base58(["characters" => Base58::BITCOIN]);
         try {
-            $iv = random_bytes(16);
+            $nonce = random_bytes(16);
             $salt = random_bytes(8);
             $password = random_bytes(32);
-            $b58 = $base58->encode($password);
-            $auth_data = [[base64_encode($iv), base64_encode($salt), 100000, 256, 128, "aes", "gcm", $this->options["compression"]],
-                $this->options["formatter"], (int) $this->options["discussion"], (int) $this->options["burn"]];
-            if ($this->options["password"]) {
-                $key = openssl_pbkdf2($password . $this->options["password"], $salt, 32, 100000, 'sha256');
-            } else {
-                $key = openssl_pbkdf2($password, $salt, 32, 100000, 'sha256');
-            }
-            $paste_data = $this->get_paste_data();
-            var_dump($paste_data);
-            if (!empty($paste_data)) {
-                if ($this->options["compression"] == "zlib") {
-                    $paste = gzdeflate(json_encode($paste_data));
-                } else {
-                    $paste = json_encode($paste_data, JSON_UNESCAPED_SLASHES);
-                }
-                $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, $options = OPENSSL_RAW_DATA,
-                    $iv, $tag, json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
-                $data = array(
-                    "v" => $this->options["version"],
-                    "auth_data" => $auth_data,
-                    "ct" => base64_encode($crypt . $tag),
-                    "meta" => array(
-                        "expire" => $this->options["expire"]
-                    )
-                );
-                return array("data" => $data, "b58" => $b58);
-            } else {
-                trigger_error("Empty PASTE ! use `set_attachment` or `set_text` before post!");
-                return array("error" => "Empty PASTE ! use `set_attachment` or `set_text` before post!");
-            }
         } catch (Exception $e) {
             return array("error" => $e);
         }
+        $b58 = $base58->encode($password);
+        $auth_data = [[base64_encode($nonce), base64_encode($salt), 100000, 256, 128, "aes", "gcm", $this->options["compression"]],
+            $this->options["formatter"], (int) $this->options["discussion"], (int) $this->options["burn"]];
+        if ($this->options["password"]) {
+            $key = openssl_pbkdf2($password . $this->options["password"], $salt, 32, 100000, 'sha256');
+        } else {
+            $key = openssl_pbkdf2($password, $salt, 32, 100000, 'sha256');
+        }
+        $paste_data = $this->get_paste_data();
+        var_dump($paste_data);
+        if (!empty($paste_data)) {
+            if ($this->options["compression"] == "zlib") {
+                $paste = gzdeflate(json_encode($paste_data));
+            } else {
+                $paste = json_encode($paste_data, JSON_UNESCAPED_SLASHES);
+            }
+            $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
+                json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
+            $data = array(
+                "v" => $this->options["version"],
+                "auth_data" => $auth_data,
+                "ct" => base64_encode($crypt . $tag),
+                "meta" => array(
+                    "expire" => $this->options["expire"]
+                )
+            );
+            return array("data" => $data, "b58" => $b58);
+        }
+        throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
     }
 
+    /**
+     * post data generated by encode().
+     * @param array $data
+     * @return array
+     * @throws PrivatebinException
+     */
     public function post(array $data): array
     {
         if (array_key_exists("data", $data) && array_key_exists("b58", $data) ) {
-            $ch = curl_init($this->options["url"]);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data["data"], JSON_UNESCAPED_SLASHES));
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            $curl = curl_init($this->options["url"]);
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data["data"], JSON_UNESCAPED_SLASHES));
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'X-Requested-With: JSONHttpRequest'));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $result = json_decode(curl_exec($ch));
-            curl_close($ch);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            $result = json_decode(curl_exec($curl));
+            curl_close($curl);
 
             return array(
                 "requests_result" => $result,
-                "b58"=> $data["b58"]
+                "b58" => $data["b58"]
             );
         }
-        trigger_error('Wrong data.', E_USER_WARNING);
-        return array("error"=>"Wrong data...");
+        throw new PrivatebinException('Wrong data provided.');
     }
 
     public function encode_and_post(): array
