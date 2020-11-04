@@ -94,11 +94,7 @@ class PrivatebinPHP
                 $mime = "application/octet-stream";
             }
             $data = "data:" . $mime . ";base64," . base64_encode($file);
-            if ($filename === null) {
-                $name = basename($file_location);
-            } else {
-                $name = $filename;
-            }
+            $name = $filename === null  ?  basename($file_location) : $filename;
             $this->options = array_merge($this->options, ["attachment" => $data, "attachment_name" => $name]);
         }
     }
@@ -205,7 +201,6 @@ class PrivatebinPHP
             $key = openssl_pbkdf2($password, $salt, 32, 100000, 'sha256');
         }
         $paste_data = $this->get_paste_data();
-        var_dump($paste_data);
         if (!empty($paste_data)) {
             if ($this->options["compression"] == "zlib") {
                 $paste = gzdeflate(json_encode($paste_data));
