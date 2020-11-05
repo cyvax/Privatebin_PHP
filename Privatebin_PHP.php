@@ -209,13 +209,9 @@ class PrivatebinPHP
         ];
         $pass = $this->options["password"] ? ($password . $this->options["password"]) : $password;
         $key = openssl_pbkdf2($pass, $salt, 32, 100000, 'sha256');
-        $paste_data = $this->get_paste_data();
+        $paste_data = json_encode($this->get_paste_data(), JSON_UNESCAPED_SLASHES);
         if (!empty($paste_data)) {
-            if ($this->options["compression"] == "zlib") {
-                $paste = gzdeflate(json_encode($paste_data));
-            } else {
-                $paste = json_encode($paste_data, JSON_UNESCAPED_SLASHES);
-            }
+            $paste = $this->options["compression"] == "zlib" ? gzdeflate($paste_data) : $paste_data;
             $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
                 json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
             $data = array(
