@@ -64,6 +64,16 @@ class PrivatebinPHP
         $this->options = array_merge($this->options, ["password" => $password]);
     }
 
+
+    /**
+     * set privatebin url.
+     * @param string $password
+     */
+    public function set_url(string $url)
+    {
+        $this->options = array_merge($this->options, ["url" => $url]);
+    }
+
     /**
      * set paste password
      * @param string $formatter
@@ -161,7 +171,7 @@ class PrivatebinPHP
             $this->options = array_merge($this->options, ["expire" => $expire]);
             return;
         }
-        throw new PrivatebinException('$expire not in default value and $bypass is false, using default value...');
+        throw new PrivatebinException('$expire not in default value and $bypass is false');
     }
 
     /**
@@ -193,13 +203,12 @@ class PrivatebinPHP
             return array("error" => $e);
         }
         $b58 = $base58->encode($password);
-        $auth_data = [[base64_encode($nonce), base64_encode($salt), 100000, 256, 128, "aes", "gcm", $this->options["compression"]],
-            $this->options["formatter"], (int) $this->options["discussion"], (int) $this->options["burn"]];
-        if ($this->options["password"]) {
-            $key = openssl_pbkdf2($password . $this->options["password"], $salt, 32, 100000, 'sha256');
-        } else {
-            $key = openssl_pbkdf2($password, $salt, 32, 100000, 'sha256');
-        }
+        $auth_data = [
+            [base64_encode($nonce), base64_encode($salt), 100000, 256, 128, "aes", "gcm", $this->options["compression"]],
+            $this->options["formatter"], (int) $this->options["discussion"], (int) $this->options["burn"]
+        ];
+        $pass = $this->options["password"] ? ($password . $this->options["password"]) : $password;
+        $key = openssl_pbkdf2($pass, $salt, 32, 100000, 'sha256');
         $paste_data = $this->get_paste_data();
         if (!empty($paste_data)) {
             if ($this->options["compression"] == "zlib") {
@@ -211,7 +220,7 @@ class PrivatebinPHP
                 json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
             $data = array(
                 "v" => $this->options["version"],
-                "auth_data" => $auth_data,
+                "adata" => $auth_data,
                 "ct" => base64_encode($crypt . $tag),
                 "meta" => array(
                     "expire" => $this->options["expire"]
@@ -242,7 +251,6 @@ class PrivatebinPHP
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             $result = json_decode(curl_exec($curl));
             curl_close($curl);
-
             return array(
                 "requests_result" => $result,
                 "b58" => $data["b58"]
