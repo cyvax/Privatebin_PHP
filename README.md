@@ -11,6 +11,10 @@ Installing
 -----
 just download Privatebin_PHP.php
 
+Dependencies
+-----
+[Tuupola Base58](https://github.com/tuupola/base58) : a Base58 encoder by Tuupola
+
 Usage
 -----
 By default Privatebin_PHP configured to use `https://paste.i2pd.xyz/` for sending and receiving pastes.
