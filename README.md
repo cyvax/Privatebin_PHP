@@ -32,11 +32,9 @@ $posted = $private->encode_and_post();
 ```
 It will send string `Because ignorance is bliss!` to [PrivateBin](https://privatebin.net/).
 
-
 Check [Wiki](https://github.com/cyvax/Privatebin_PHP/wiki) for documentation.<br>
 
 License
 -------
 This project is licensed under the MIT license, which can be found in the file
 [LICENSE](https://github.com/cyvax/Privatebin_PHP/blob/master/LICENSE) in the root of the project source code.
-
