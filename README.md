@@ -30,9 +30,10 @@ $private =new PrivatebinPHP(array(
 ));
 $posted = $private->encode_and_post();
 ```
+It will send string `Because ignorance is bliss!` to [PrivateBin](https://privatebin.net/).
+
 
 Check [Wiki](https://github.com/cyvax/Privatebin_PHP/wiki) for documentation.<br>
-It will send string `Because ignorance is bliss!` to [PrivateBin](https://privatebin.net/).
 
 License
 -------
