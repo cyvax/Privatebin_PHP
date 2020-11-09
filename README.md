@@ -1,5 +1,7 @@
 ![GitHub License](https://img.shields.io/github/license/cyvax/Privatebin_PHP?style=for-the-badge)
 ![version](https://img.shields.io/github/v/tag/cyvax/Privatebin_PHP?label=VERSION&style=for-the-badge)
+![packagist](https://img.shields.io/packagist/dt/cyvax/privatebin_php?style=for-the-badge)
+![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/cyvax/privatebin_php?style=for-the-badge)
 ![Codacy grade](https://img.shields.io/codacy/grade/13bbc8be0d134180b8221f014af50e74?style=for-the-badge)
 
 Privatebin_PHP 
