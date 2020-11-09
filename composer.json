@@ -13,11 +13,13 @@
             "role": "Developer"
         }
     ],
-        "support": {
+    "support": {
         "issues": "https://github.com/cyvax/Privatebin_PHP/issues",
         "wiki": "https://github.com/cyvax/Privatebin_PHP/wiki",
         "source": "https://github.com/cyvax/Privatebin_PHP"
-	  },
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "php": ">=7.1.0",
         "tuupola/base58": ">=2.1.0"
