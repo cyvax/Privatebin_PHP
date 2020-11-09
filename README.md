@@ -26,6 +26,8 @@ You can parse config to a PrivatebinPHP object.
 Example :<br>
 fast one with options passed as argument on creation : 
 ```php
+use Cyvax\PrivatebinPHP;
+
 $private =new PrivatebinPHP(array(
     "url" => "https://privatebin.net/",
     "text" => "Because ignorance is bliss!",
