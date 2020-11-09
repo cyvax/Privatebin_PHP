@@ -47,6 +47,7 @@ class PrivatebinPHP
         "discussion" => false,
         "burn" => false,
         "text" => "",
+        "debug" => false,
     ];
 
     public function __construct(array $options = [])
@@ -207,9 +208,10 @@ class PrivatebinPHP
         ];
         $pass = $this->options["password"] ? ($password . $this->options["password"]) : $password;
         $key = openssl_pbkdf2($pass, $salt, 32, 100000, 'sha256');
+        $zlib_def = deflate_init(ZLIB_ENCODING_RAW);
         $paste_data = json_encode($this->get_paste_data(), JSON_UNESCAPED_SLASHES);
         if (!empty($paste_data)) {
-            $paste = $this->options["compression"] == "zlib" ? gzdeflate($paste_data) : $paste_data;
+            $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
             $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
                 json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
             $data = array(
@@ -220,6 +222,15 @@ class PrivatebinPHP
                     "expire" => $this->options["expire"]
                 )
             );
+            if ($this->options["debug"]) {
+                echo sprintf("Base58 Hash: %s<br>" .
+                     "PBKDF2: %s<br>" .
+                     "Paste Data: %s<br>" .
+                     "Auth Data: <pre>%s</pre><br>" .
+                     "CipherText: %s<br>" .
+                     "CipherTag: %s<br>" .
+                     "Post Data: <pre>%s</pre><br>", $b58, base64_encode($key), $paste_data, print_r($auth_data, true), base64_encode($crypt), base64_encode($tag), print_r($data, true));
+            }
             return array("data" => $data, "b58" => $b58);
         }
         throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
@@ -245,6 +256,9 @@ class PrivatebinPHP
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             $result = json_decode(curl_exec($curl));
             curl_close($curl);
+            if ($this->options["debug"]) {
+                echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
+            }
             return array(
                 "requests_result" => $result,
                 "b58" => $data["b58"]
