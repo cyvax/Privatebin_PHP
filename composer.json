@@ -2,7 +2,9 @@
     "name": "cyvax/privatebin_php",
     "type": "library",
     "description": "Privatebin_PHP is a simple client for PrivateBin written on PHP.",
-    "keywords": ["privatebin"],
+    "keywords": [
+        "privatebin"
+    ],
     "homepage": "https://github.com/cyvax/Privatebin_PHP",
     "license": "MIT",
     "authors": [
@@ -18,15 +20,14 @@
         "wiki": "https://github.com/cyvax/Privatebin_PHP/wiki",
         "source": "https://github.com/cyvax/Privatebin_PHP"
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "require": {
         "php": ">=7.1.0",
-        "tuupola/base58": ">=2.1.0"
+        "tuupola/base58": "~2.1.0"
     },
     "autoload": {
         "psr-4": {
-            "Cyvax\\": "src"
+            "Cyvax\\": "src/"
         }
-    }
+    },
+    "prefer-stable": true
 }
