@@ -1,7 +1,6 @@
 {
     "name": "cyvax/privatebin_php",
     "type": "library",
-    "version" : "0.1",
     "description": "Privatebin_PHP is a simple client for PrivateBin written on PHP.",
     "keywords": ["privatebin"],
     "homepage": "https://github.com/cyvax/Privatebin_PHP",
