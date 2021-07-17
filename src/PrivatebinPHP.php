@@ -32,8 +32,6 @@ namespace Cyvax;
 use Exception;
 use Tuupola\Base58;
 
-class PrivatebinException extends Exception {}
-
 class PrivatebinPHP
 {
     private $options = [
