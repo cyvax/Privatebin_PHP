@@ -101,11 +101,10 @@ class PrivatebinPHP
      */
     public function set_formatter(string $formatter, bool $bypass = false)
     {
-        if (in_array($formatter, self::FORMATTER_VALUES) || $bypass) {
-            $this->options = array_merge($this->options, ["formatter" => $formatter]);
-            return;
+        if (!in_array($formatter, self::FORMATTER_VALUES) && !$bypass) {
+            throw new PrivatebinException('$formatter not in default value and $bypass is false');
         }
-        throw new PrivatebinException('$formatter not in default value and $bypass is false');
+        $this->options = array_merge($this->options, ["formatter" => $formatter]);
     }
 
     /**
@@ -144,11 +143,10 @@ class PrivatebinPHP
      */
     public function set_compression(string $compression)
     {
-        if (in_array($compression, self::COMPRESSION_VALUES)) {
-            $this->options = array_merge($this->options, ["compression" => $compression]);
-            return;
+        if (!in_array($compression, self::COMPRESSION_VALUES)) {
+            throw new PrivatebinException('Unknown compression type, (zlib or none)...');
         }
-        throw new PrivatebinException('Unknown compression type, (zlib or none)...');
+        $this->options = array_merge($this->options, ["compression" => $compression]);
     }
 
     /**
@@ -196,11 +194,10 @@ class PrivatebinPHP
      */
     public function set_expire(string $expire, bool $bypass = false)
     {
-        if (in_array($expire, self::EXPIRE_VALUES) || $bypass) {
-            $this->options = array_merge($this->options, ["expire" => $expire]);
-            return;
+        if (!in_array($expire, self::EXPIRE_VALUES) && !$bypass) {
+            throw new PrivatebinException('$expire not in default value and $bypass is false');
         }
-        throw new PrivatebinException('$expire not in default value and $bypass is false');
+        $this->options = array_merge($this->options, ["expire" => $expire]);
     }
 
     /**
@@ -240,30 +237,30 @@ class PrivatebinPHP
         $key = openssl_pbkdf2($pass, $salt, 32, 100000, 'sha256');
         $zlib_def = deflate_init(ZLIB_ENCODING_RAW);
         $paste_data = json_encode($this->get_paste_data(), JSON_UNESCAPED_SLASHES);
-        if (!empty($paste_data)) {
-            $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
-            $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
-                json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
-            $data = array(
-                "v" => 2,
-                "adata" => $auth_data,
-                "ct" => base64_encode($crypt . $tag),
-                "meta" => array(
-                    "expire" => $this->options["expire"]
-                )
-            );
-            if ($this->options["debug"]) {
-                echo sprintf("Base58 Hash: %s<br>" .
-                     "PBKDF2: %s<br>" .
-                     "Paste Data: %s<br>" .
-                     "Auth Data: <pre>%s</pre><br>" .
-                     "CipherText: %s<br>" .
-                     "CipherTag: %s<br>" .
-                     "Post Data: <pre>%s</pre><br>", $b58, base64_encode($key), $paste_data, print_r($auth_data, true), base64_encode($crypt), base64_encode($tag), print_r($data, true));
-            }
-            return array("data" => $data, "b58" => $b58);
+        if (empty($paste_data)) {
+            throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
         }
-        throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
+        $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
+        $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
+            json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
+        $data = array(
+            "v" => 2,
+            "adata" => $auth_data,
+            "ct" => base64_encode($crypt . $tag),
+            "meta" => array(
+                "expire" => $this->options["expire"]
+            )
+        );
+        if ($this->options["debug"]) {
+            echo sprintf("Base58 Hash: %s<br>" .
+                "PBKDF2: %s<br>" .
+                "Paste Data: %s<br>" .
+                "Auth Data: <pre>%s</pre><br>" .
+                "CipherText: %s<br>" .
+                "CipherTag: %s<br>" .
+                "Post Data: <pre>%s</pre><br>", $b58, base64_encode($key), $paste_data, print_r($auth_data, true), base64_encode($crypt), base64_encode($tag), print_r($data, true));
+        }
+        return array("data" => $data, "b58" => $b58);
     }
 
     /**
