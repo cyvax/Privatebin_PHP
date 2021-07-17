@@ -22,7 +22,12 @@
     },
     "require": {
         "php": ">=7.1.0",
-        "tuupola/base58": "~2.1.0"
+        "tuupola/base58": "~2.1.0",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-zlib": "*",
+        "ext-fileinfo": "*"
     },
     "autoload": {
         "psr-4": {
