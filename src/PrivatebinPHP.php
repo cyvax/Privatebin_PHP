@@ -226,7 +226,7 @@ class PrivatebinPHP
             $salt = random_bytes(8);
             $password = random_bytes(32);
         } catch (Exception $e) {
-            return array("error" => $e);
+            return ["error" => $e];
         }
         $b58 = $base58->encode($password);
         $auth_data = [
@@ -243,14 +243,14 @@ class PrivatebinPHP
         $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
         $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
             json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
-        $data = array(
+        $data = [
             "v" => 2,
             "adata" => $auth_data,
             "ct" => base64_encode($crypt . $tag),
-            "meta" => array(
-                "expire" => $this->options["expire"]
-            )
-        );
+            "meta" => [
+                "expire" => $this->options["expire"],
+            ],
+        ];
         if ($this->options["debug"]) {
             echo sprintf("Base58 Hash: %s<br>" .
                 "PBKDF2: %s<br>" .
@@ -260,7 +260,10 @@ class PrivatebinPHP
                 "CipherTag: %s<br>" .
                 "Post Data: <pre>%s</pre><br>", $b58, base64_encode($key), $paste_data, print_r($auth_data, true), base64_encode($crypt), base64_encode($tag), print_r($data, true));
         }
-        return array("data" => $data, "b58" => $b58);
+        return [
+            "data" => $data,
+            "b58" => $b58,
+        ];
     }
 
     /**
@@ -277,19 +280,20 @@ class PrivatebinPHP
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data["data"], JSON_UNESCAPED_SLASHES));
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            curl_setopt($curl, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
-                'X-Requested-With: JSONHttpRequest'));
+                'X-Requested-With: JSONHttpRequest',
+            ]);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             $result = json_decode(curl_exec($curl));
             curl_close($curl);
             if ($this->options["debug"]) {
                 echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
             }
-            return array(
+            return [
                 "requests_result" => $result,
-                "b58" => $data["b58"]
-            );
+                "b58" => $data["b58"],
+            ];
         }
         throw new PrivatebinException('Wrong data provided.');
     }
