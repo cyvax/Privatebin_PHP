@@ -50,7 +50,7 @@ class PrivatebinPHP
 
     public function __construct(array $options = [])
     {
-        $this->options = array_merge($this->options, (array) $options);
+        $this->options = array_merge($this->options, $options);
     }
 
     /**
