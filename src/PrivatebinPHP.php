@@ -79,7 +79,7 @@ class PrivatebinPHP implements PrivatebinClientInterface
      */
     public function set_password(string $password)
     {
-        $this->options = array_merge($this->options, ["password" => $password]);
+        $this->options['password'] = $password;
     }
 
     /**
@@ -87,7 +87,7 @@ class PrivatebinPHP implements PrivatebinClientInterface
      */
     public function set_url(string $url)
     {
-        $this->options = array_merge($this->options, ["url" => $url]);
+        $this->options['url'] = $url;
     }
 
     /**
@@ -99,7 +99,7 @@ class PrivatebinPHP implements PrivatebinClientInterface
         if (!in_array($formatter, self::FORMATTER_VALUES) && !$bypass) {
             throw new PrivatebinException('$formatter not in default value and $bypass is false');
         }
-        $this->options = array_merge($this->options, ["formatter" => $formatter]);
+        $this->options['formatter'] = $formatter;
     }
 
     /**
@@ -137,7 +137,7 @@ class PrivatebinPHP implements PrivatebinClientInterface
         if (!in_array($compression, self::COMPRESSION_VALUES)) {
             throw new PrivatebinException('Unknown compression type, (zlib or none)...');
         }
-        $this->options = array_merge($this->options, ["compression" => $compression]);
+        $this->options['compression'] = $compression;
     }
 
     /**
@@ -179,7 +179,7 @@ class PrivatebinPHP implements PrivatebinClientInterface
         if (!in_array($expire, self::EXPIRE_VALUES) && !$bypass) {
             throw new PrivatebinException('$expire not in default value and $bypass is false');
         }
-        $this->options = array_merge($this->options, ["expire" => $expire]);
+        $this->options['expire'] = $expire;
     }
 
     /**
@@ -189,7 +189,7 @@ class PrivatebinPHP implements PrivatebinClientInterface
     private function get_paste_data(): array
     {
         $paste_data = ["paste" => $this->options["text"]];
-        if (!($this->options["attachment"] === null)) {
+        if ($this->options["attachment"] !== null) {
             $paste_data = array_merge($paste_data, ["attachment" => $this->options["attachment"], "attachment_name" => $this->options["attachment_name"]]);
         }
         return $paste_data;
