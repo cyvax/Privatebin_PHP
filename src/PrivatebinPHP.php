@@ -34,6 +34,28 @@ use Tuupola\Base58;
 
 class PrivatebinPHP
 {
+    const COMPRESSION_VALUES = [
+        "zlib",
+        "none",
+    ];
+
+    const EXPIRE_VALUES = [
+        "5min",
+        "10min",
+        "1hour",
+        "1day",
+        "1week",
+        "1month",
+        "1year",
+        "never",
+    ];
+
+    const FORMATTER_VALUES = [
+        "plaintext",
+        "syntaxhighlighting",
+        "markdown",
+    ];
+
     private $options = [
         "url" => "https://paste.i2pd.xyz/",
         "compression" => "zlib",
@@ -79,7 +101,7 @@ class PrivatebinPHP
      */
     public function set_formatter(string $formatter, bool $bypass = false)
     {
-        if (in_array($formatter, ["plaintext", "syntaxhighlighting", "markdown"]) || $bypass) {
+        if (in_array($formatter, self::FORMATTER_VALUES) || $bypass) {
             $this->options = array_merge($this->options, ["formatter" => $formatter]);
             return;
         }
@@ -122,7 +144,7 @@ class PrivatebinPHP
      */
     public function set_compression(string $compression)
     {
-        if (in_array($compression, ["zlib", "none"])) {
+        if (in_array($compression, self::COMPRESSION_VALUES)) {
             $this->options = array_merge($this->options, ["compression" => $compression]);
             return;
         }
@@ -174,7 +196,7 @@ class PrivatebinPHP
      */
     public function set_expire(string $expire, bool $bypass = false)
     {
-        if (in_array($expire, ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]) || $bypass) {
+        if (in_array($expire, self::EXPIRE_VALUES) || $bypass) {
             $this->options = array_merge($this->options, ["expire" => $expire]);
             return;
         }
