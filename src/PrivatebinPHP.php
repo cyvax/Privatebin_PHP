@@ -136,7 +136,7 @@ class PrivatebinPHP
      */
     public function set_discussion(bool $discussion)
     {
-        if ($this->options["burn"]) {
+        if ($discussion && $this->options["burn"]) {
             $this->options["burn"] = false;
         }
         $this->options["discussion"] = $discussion;
@@ -149,7 +149,7 @@ class PrivatebinPHP
      */
     public function set_burn(bool $burn)
     {
-        if ($this->options["discussion"]) {
+        if ($burn && $this->options["discussion"]) {
             $this->options["discussion"] = false;
         }
         $this->options["burn"] = $burn;
