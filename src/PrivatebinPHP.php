@@ -89,9 +89,9 @@ class PrivatebinPHP
     /**
      * set the attachment, use file_location as url or path, use filename to force a filename.
      * @param string $file_location
-     * @param string $filename
+     * @param string|null $filename
      */
-    public function set_attachment(string $file_location, string $filename= null)
+    public function set_attachment(string $file_location, string $filename = null)
     {
         $file = file_get_contents($file_location);
         if ($file) {
@@ -130,8 +130,8 @@ class PrivatebinPHP
     }
 
     /**
-     * set discussion true or false, (default : true)
-     * setting this to true will desactivate burn if it's to true.
+     * set discussion true or false, (default : false)
+     * setting this to true will deactivate burn if it's set to true.
      * @param bool $discussion
      */
     public function set_discussion(bool $discussion)
@@ -144,7 +144,7 @@ class PrivatebinPHP
 
     /**
      * set burn true or false, (default : false)
-     * setting this to true will desactivate discussion if it's to true.
+     * setting this to true will deactivate discussion if it's set to true.
      * @param bool $burn
      */
     public function set_burn(bool $burn)
@@ -157,7 +157,7 @@ class PrivatebinPHP
 
     /**
      * set expire time, (default : 1day)
-     * use bypass for value not in ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]. (default : false)
+     * use bypass for value not in ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]. (default : 1day)
      * @param string $expire
      * @param bool $bypass
      * @throws PrivatebinException
@@ -172,7 +172,7 @@ class PrivatebinPHP
     }
 
     /**
-     * Get paste_data_json.
+     * Get paste data.
      * @return array
      */
     private function get_paste_data(): array
