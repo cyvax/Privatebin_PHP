@@ -156,6 +156,16 @@ class PrivatebinPHP
     }
 
     /**
+     * set debug true or false, (default : false)
+     * setting this to true will cause debug information to be printed.
+     * @param bool $debug
+     */
+    public function set_debug(bool $debug)
+    {
+        $this->options["debug"] = $debug;
+    }
+
+    /**
      * set expire time, (default : 1day)
      * use bypass for value not in ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]. (default : 1day)
      * @param string $expire
