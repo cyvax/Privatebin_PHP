@@ -11,8 +11,6 @@ Privatebin_PHP is api for [PrivateBin](https://github.com/PrivateBin/PrivateBin/
 
 Installing
 -----
-just download src/PrivatebinPHP.php<br>
-or use :<br>
 composer require cyvax/privatebin_php
 
 Dependencies
