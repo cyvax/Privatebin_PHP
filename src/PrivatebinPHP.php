@@ -28,14 +28,33 @@ SOFTWARE.
 
 namespace Cyvax;
 
-
 use Exception;
 use Tuupola\Base58;
 
-class PrivatebinException extends Exception {}
-
-class PrivatebinPHP
+class PrivatebinPHP implements PrivatebinClientInterface
 {
+    const COMPRESSION_VALUES = [
+        "zlib",
+        "none",
+    ];
+
+    const EXPIRE_VALUES = [
+        "5min",
+        "10min",
+        "1hour",
+        "1day",
+        "1week",
+        "1month",
+        "1year",
+        "never",
+    ];
+
+    const FORMATTER_VALUES = [
+        "plaintext",
+        "syntaxhighlighting",
+        "markdown",
+    ];
+
     private $options = [
         "url" => "https://paste.i2pd.xyz/",
         "compression" => "zlib",
@@ -52,48 +71,41 @@ class PrivatebinPHP
 
     public function __construct(array $options = [])
     {
-        $this->options = array_merge($this->options, (array) $options);
+        $this->options = array_merge($this->options, $options);
     }
 
     /**
-     * set paste password
-     * @param string $password
+     * {@inheritDoc}
      */
     public function set_password(string $password)
     {
-        $this->options = array_merge($this->options, ["password" => $password]);
+        $this->options['password'] = $password;
     }
 
     /**
-     * set privatebin url.
-     * @param string $url
+     * {@inheritDoc}
      */
     public function set_url(string $url)
     {
-        $this->options = array_merge($this->options, ["url" => $url]);
+        $this->options['url'] = $url;
     }
 
     /**
-     * set paste formatter
-     * @param string $formatter
-     * @param bool $bypass
+     * {@inheritDoc}
      * @throws PrivatebinException
      */
     public function set_formatter(string $formatter, bool $bypass = false)
     {
-        if (in_array($formatter, ["plaintext", "syntaxhighlighting", "markdown"]) || $bypass) {
-            $this->options = array_merge($this->options, ["formatter" => $formatter]);
-            return;
+        if (!in_array($formatter, self::FORMATTER_VALUES) && !$bypass) {
+            throw new PrivatebinException('$formatter not in default value and $bypass is false');
         }
-        throw new PrivatebinException('$formatter not in default value and $bypass is false');
+        $this->options['formatter'] = $formatter;
     }
 
     /**
-     * set the attachment, use file_location as url or path, use filename to force a filename.
-     * @param string $file_location
-     * @param string $filename
+     * {@inheritDoc}
      */
-    public function set_attachment(string $file_location, string $filename= null)
+    public function set_attachment(string $file_location, string $filename = null)
     {
         $file = file_get_contents($file_location);
         if ($file) {
@@ -109,8 +121,7 @@ class PrivatebinPHP
     }
 
     /**
-     * set the text of the paste!
-     * @param string $text
+     * {@inheritDoc}
      */
     public function set_text(string $text)
     {
@@ -118,77 +129,74 @@ class PrivatebinPHP
     }
 
     /**
-     * set compression method
-     * @param string $compression : zlib or none
+     * {@inheritDoc}
      * @throws PrivatebinException
      */
     public function set_compression(string $compression)
     {
-        if (in_array($compression, ["zlib", "none"])) {
-            $this->options = array_merge($this->options, ["compression" => $compression]);
-            return;
+        if (!in_array($compression, self::COMPRESSION_VALUES)) {
+            throw new PrivatebinException('Unknown compression type, (zlib or none)...');
         }
-        throw new PrivatebinException('Unknown compression type, (zlib or none)...');
+        $this->options['compression'] = $compression;
     }
 
     /**
-     * set discussion true or false, (default : true)
-     * setting this to true will desactivate burn if it's to true.
-     * @param bool $discussion
+     * {@inheritDoc}
      */
     public function set_discussion(bool $discussion)
     {
-        if ($this->options["burn"]) {
+        if ($discussion && $this->options["burn"]) {
             $this->options["burn"] = false;
         }
         $this->options["discussion"] = $discussion;
     }
 
     /**
-     * set burn true or false, (default : false)
-     * setting this to true will desactivate discussion if it's to true.
-     * @param bool $burn
+     * {@inheritDoc}
      */
     public function set_burn(bool $burn)
     {
-        if ($this->options["discussion"]) {
+        if ($burn && $this->options["discussion"]) {
             $this->options["discussion"] = false;
         }
         $this->options["burn"] = $burn;
     }
 
     /**
-     * set expire time, (default : 1day)
-     * use bypass for value not in ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]. (default : false)
-     * @param string $expire
-     * @param bool $bypass
+     * {@inheritDoc}
+     */
+    public function set_debug(bool $debug)
+    {
+        $this->options["debug"] = $debug;
+    }
+
+    /**
+     * {@inheritDoc}
      * @throws PrivatebinException
      */
     public function set_expire(string $expire, bool $bypass = false)
     {
-        if (in_array($expire, ["5min", "10min", "1hour", "1day", "1week", "1month", "1year", "never"]) || $bypass) {
-            $this->options = array_merge($this->options, ["expire" => $expire]);
-            return;
+        if (!in_array($expire, self::EXPIRE_VALUES) && !$bypass) {
+            throw new PrivatebinException('$expire not in default value and $bypass is false');
         }
-        throw new PrivatebinException('$expire not in default value and $bypass is false');
+        $this->options['expire'] = $expire;
     }
 
     /**
-     * Get paste_data_json.
+     * Get paste data.
      * @return array
      */
     private function get_paste_data(): array
     {
         $paste_data = ["paste" => $this->options["text"]];
-        if (!($this->options["attachment"] === null)) {
+        if ($this->options["attachment"] !== null) {
             $paste_data = array_merge($paste_data, ["attachment" => $this->options["attachment"], "attachment_name" => $this->options["attachment_name"]]);
         }
         return $paste_data;
     }
 
     /**
-     * Encode string to a paste, return ready to post data with b58 key.
-     * @return array|Exception[]
+     * {@inheritDoc}
      * @throws PrivatebinException
      */
     public function encode(): array
@@ -199,7 +207,7 @@ class PrivatebinPHP
             $salt = random_bytes(8);
             $password = random_bytes(32);
         } catch (Exception $e) {
-            return array("error" => $e);
+            return ["error" => $e];
         }
         $b58 = $base58->encode($password);
         $auth_data = [
@@ -210,37 +218,38 @@ class PrivatebinPHP
         $key = openssl_pbkdf2($pass, $salt, 32, 100000, 'sha256');
         $zlib_def = deflate_init(ZLIB_ENCODING_RAW);
         $paste_data = json_encode($this->get_paste_data(), JSON_UNESCAPED_SLASHES);
-        if (!empty($paste_data)) {
-            $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
-            $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
-                json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
-            $data = array(
-                "v" => 2,
-                "adata" => $auth_data,
-                "ct" => base64_encode($crypt . $tag),
-                "meta" => array(
-                    "expire" => $this->options["expire"]
-                )
-            );
-            if ($this->options["debug"]) {
-                echo sprintf("Base58 Hash: %s<br>" .
-                     "PBKDF2: %s<br>" .
-                     "Paste Data: %s<br>" .
-                     "Auth Data: <pre>%s</pre><br>" .
-                     "CipherText: %s<br>" .
-                     "CipherTag: %s<br>" .
-                     "Post Data: <pre>%s</pre><br>", $b58, base64_encode($key), $paste_data, print_r($auth_data, true), base64_encode($crypt), base64_encode($tag), print_r($data, true));
-            }
-            return array("data" => $data, "b58" => $b58);
+        if (empty($paste_data)) {
+            throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
         }
-        throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
+        $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
+        $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
+            json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
+        $data = [
+            "v" => 2,
+            "adata" => $auth_data,
+            "ct" => base64_encode($crypt . $tag),
+            "meta" => [
+                "expire" => $this->options["expire"],
+            ],
+        ];
+        if ($this->options["debug"]) {
+            echo sprintf("Base58 Hash: %s<br>" .
+                "PBKDF2: %s<br>" .
+                "Paste Data: %s<br>" .
+                "Auth Data: <pre>%s</pre><br>" .
+                "CipherText: %s<br>" .
+                "CipherTag: %s<br>" .
+                "Post Data: <pre>%s</pre><br>", $b58, base64_encode($key), $paste_data, print_r($auth_data, true), base64_encode($crypt), base64_encode($tag), print_r($data, true));
+        }
+        return [
+            "data" => $data,
+            "b58" => $b58,
+        ];
     }
 
     /**
-    * post data generated by encode().
-    * @param array $data
-    * @return array
-    * @throws PrivatebinException
+     * {@inheritDoc}
+     * @throws PrivatebinException
      */
     public function post(array $data): array
     {
@@ -250,27 +259,27 @@ class PrivatebinPHP
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data["data"], JSON_UNESCAPED_SLASHES));
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            curl_setopt($curl, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
-                'X-Requested-With: JSONHttpRequest'));
+                'X-Requested-With: JSONHttpRequest',
+            ]);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             $result = json_decode(curl_exec($curl));
             curl_close($curl);
             if ($this->options["debug"]) {
                 echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
             }
-            return array(
+            return [
                 "requests_result" => $result,
-                "b58" => $data["b58"]
-            );
+                "b58" => $data["b58"],
+            ];
         }
         throw new PrivatebinException('Wrong data provided.');
     }
 
     /**
-    * encode and post data.
-    * @return array
-    * @throws PrivatebinException
+     * {@inheritDoc}
+     * @throws PrivatebinException
      */
     public function encode_and_post(): array
     {
