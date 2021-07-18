@@ -221,6 +221,9 @@ class PrivatebinPHP implements PrivatebinClientInterface
         if (empty($paste_data)) {
             throw new PrivatebinException("Empty PASTE ! use `set_attachment` or `set_text` before post!");
         }
+        if ($this->options["burn"] && $this->options["discussion"]) {
+            throw new PrivatebinException("Burn and Discussion set to true, this result in a Invalid data...");
+        }
         $paste = $this->options["compression"] == "zlib" ? deflate_add($zlib_def, $paste_data, ZLIB_FINISH) : $paste_data;
         $crypt = openssl_encrypt($paste, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag,
             json_encode($auth_data, JSON_UNESCAPED_SLASHES), 16);
