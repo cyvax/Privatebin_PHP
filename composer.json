@@ -1,9 +1,11 @@
 {
     "name": "cyvax/privatebin_php",
     "type": "library",
-    "description": "Privatebin_PHP is a simple client for PrivateBin written on PHP.",
+    "description": "PHP client library for PrivateBin with client-side encryption and decryption support.",
     "keywords": [
-        "privatebin"
+        "privatebin",
+        "paste",
+        "encryption"
     ],
     "homepage": "https://github.com/cyvax/Privatebin_PHP",
     "license": "MIT",
@@ -22,16 +24,31 @@
     },
     "require": {
         "php": ">=7.1.0",
-        "tuupola/base58": "~2.1.0",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-zlib": "*",
         "ext-fileinfo": "*"
     },
+    "suggest": {
+        "ext-gmp": "Faster Base58 encoding and decoding."
+    },
+    "_comment": [
+        "Development and test tooling require PHP 8.5+.",
+        "The library runtime itself remains compatible with PHP 7.1+.",
+        "Reason: the PrivatebinPHPPipe client is designed for the PHP 8.5 pipe operator and the test suite uses modern PHPUnit syntax."
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^13.1"
+    },
     "autoload": {
         "psr-4": {
             "Cyvax\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cyvax\\Tests\\": "tests/"
         }
     },
     "prefer-stable": true
