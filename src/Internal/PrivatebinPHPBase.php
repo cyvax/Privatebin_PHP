@@ -32,7 +32,8 @@ use Cyvax\Enums\Compression;
 use Cyvax\Enums\Expire;
 use Cyvax\Enums\Formatter;
 use Cyvax\Exceptions\PrivatebinException;
-use Exception;
+use Cyvax\Internal\Http\CurlHttpClient;
+use Cyvax\Internal\Http\HttpClientInterface;
 
 /**
  * @internal
@@ -78,10 +79,16 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param array $options
+     * @param HttpClientInterface|null $httpClient
      */
-    public function __construct(array $options = [])
-    {
+    public function __construct(
+        array $options = [],
+        ?HttpClientInterface $httpClient = null,
+        ?PasteEncryptorInterface $encryptor = null
+    ) {
         $this->options = array_merge($this->options, $options);
+        $this->httpClient = $httpClient ?? new CurlHttpClient();
+        $this->encryptor = $encryptor ?? new AesEncryptor();
     }
 
     /**
@@ -389,36 +396,18 @@ abstract class PrivatebinPHPBase
             throw new PrivatebinException("Wrong data provided.");
         }
 
-        $curl = curl_init($this->options["url"]);
-        if ($curl === false) {
-            throw new PrivatebinException("Unable to initialize cURL.");
-        }
-
-        $postFields = json_encode($data["data"], JSON_UNESCAPED_SLASHES);
-        if ($postFields === false) {
+        $body = json_encode($data["data"], JSON_UNESCAPED_SLASHES);
+        if ($body === false) {
             throw new PrivatebinException("Unable to encode post data.");
         }
 
-        curl_setopt($curl, CURLOPT_POST, 1);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $postFields);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, $this->options["ssl_verify"] ? 2 : 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $this->options["ssl_verify"] ? 1 : 0);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json",
-            "X-Requested-With: JSONHttpRequest",
-        ]);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($curl);
-
-        if ($response === false) {
-            $error = curl_error($curl);
-            curl_close($curl);
-
-            throw new PrivatebinException("cURL error: " . $error);
-        }
-
-        curl_close($curl);
+        $response = $this->httpClient->request(
+            $this->options["url"],
+            "POST",
+            ["Content-Type: application/json", "X-Requested-With: JSONHttpRequest"],
+            $this->options["ssl_verify"],
+            $body
+        );
 
         $result = json_decode($response);
 
@@ -430,10 +419,48 @@ abstract class PrivatebinPHPBase
             echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
         }
 
+        if (isset($result->status) && $result->status !== 0) {
+            throw new PrivatebinException("Server error: " . ($result->message ?? "Unknown error"), 0, null, $result->status, $result);
+        }
+
         return [
             "requests_result" => $result,
             "b58" => $data["b58"],
         ];
+    }
+
+    /**
+     * @param string $pasteId
+     * @param string $deleteToken
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function delete(string $pasteId, string $deleteToken): array
+    {
+        $body = json_encode(["pasteid" => $pasteId, "deletetoken" => $deleteToken], JSON_UNESCAPED_SLASHES);
+        if ($body === false) {
+            throw new PrivatebinException("Unable to encode delete data.");
+        }
+
+        $response = $this->httpClient->request(
+            $this->options["url"],
+            "DELETE",
+            ["Content-Type: application/json", "X-Requested-With: JSONHttpRequest"],
+            $this->options["ssl_verify"],
+            $body
+        );
+
+        $result = json_decode($response);
+
+        if (!is_object($result)) {
+            throw new PrivatebinException("Invalid server response: " . $response);
+        }
+
+        if (isset($result->status) && $result->status !== 0) {
+            throw new PrivatebinException("Server error: " . ($result->message ?? "Unknown error"), 0, null, $result->status, $result);
+        }
+
+        return ["id" => $pasteId];
     }
 
     /**
@@ -452,29 +479,14 @@ abstract class PrivatebinPHPBase
      */
     public function fetch(string $id): array
     {
-        $url = rtrim($this->options["url"], "/") . "/?pasteid=" . urlencode($id);
+        $url = rtrim($this->options["url"], "/") . "/?" . urlencode($id);
 
-        $curl = curl_init($url);
-        if ($curl === false) {
-            throw new PrivatebinException("Unable to initialize cURL.");
-        }
-
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            "X-Requested-With: JSONHttpRequest",
-        ]);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, $this->options["ssl_verify"] ? 2 : 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $this->options["ssl_verify"] ? 1 : 0);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($curl);
-
-        if ($response === false) {
-            $error = curl_error($curl);
-            curl_close($curl);
-            throw new PrivatebinException("cURL error: " . $error);
-        }
-
-        curl_close($curl);
+        $response = $this->httpClient->request(
+            $url,
+            "GET",
+            ["X-Requested-With: JSONHttpRequest"],
+            $this->options["ssl_verify"]
+        );
 
         $result = json_decode($response, true);
 

@@ -29,8 +29,33 @@ SOFTWARE.
 namespace Cyvax;
 
 use Cyvax\Clients\PrivatebinSnakeCase;
+use Cyvax\Exceptions\PrivatebinException;
 
 /**
  * @deprecated Use \Cyvax\Clients\PrivatebinSnakeCase instead.
  */
-class PrivatebinPHP extends PrivatebinSnakeCase {}
+class PrivatebinPHP extends PrivatebinSnakeCase
+{
+    /**
+     * Preserves the BC behavior: server-side errors are returned as-is
+     * instead of throwing a PrivatebinException.
+     *
+     * @param array $data
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function post(array $data): array
+    {
+        try {
+            return parent::post($data);
+        } catch (PrivatebinException $e) {
+            if ($e->getResponseData() !== null) {
+                return [
+                    "requests_result" => $e->getResponseData(),
+                    "b58" => $data["b58"],
+                ];
+            }
+            throw $e;
+        }
+    }
+}
