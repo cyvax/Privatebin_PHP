@@ -81,14 +81,13 @@ abstract class PrivatebinPHPBase
      * @param array $options
      * @param HttpClientInterface|null $httpClient
      */
+    public function __construct(array $options = [])
+    {
     public function __construct(
         array $options = [],
         ?HttpClientInterface $httpClient = null,
-        ?PasteEncryptorInterface $encryptor = null
-    ) {
         $this->options = array_merge($this->options, $options);
         $this->httpClient = $httpClient ?? new CurlHttpClient();
-        $this->encryptor = $encryptor ?? new AesEncryptor();
     }
 
     /**
@@ -417,10 +416,6 @@ abstract class PrivatebinPHPBase
 
         if ($this->options["debug"]) {
             echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
-        }
-
-        if (isset($result->status) && $result->status !== 0) {
-            throw new PrivatebinException("Server error: " . ($result->message ?? "Unknown error"), 0, null, $result->status, $result);
         }
 
         return [
