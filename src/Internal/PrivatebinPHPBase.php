@@ -77,17 +77,25 @@ abstract class PrivatebinPHPBase
         "ssl_verify" => true,
     ];
 
+    /** @var HttpClientInterface $httpClient */
+    private $httpClient;
+
+    /** @var PasteEncryptorInterface $encryptor */
+    private $encryptor;
+
     /**
      * @param array $options
      * @param HttpClientInterface|null $httpClient
+     * @param PasteEncryptorInterface|null $encryptor
      */
-    public function __construct(array $options = [])
-    {
     public function __construct(
         array $options = [],
         ?HttpClientInterface $httpClient = null,
+        ?PasteEncryptorInterface $encryptor = null
+    ) {
         $this->options = array_merge($this->options, $options);
         $this->httpClient = $httpClient ?? new CurlHttpClient();
+        $this->encryptor = $encryptor ?? new AesEncryptor();
     }
 
     /**
@@ -267,50 +275,6 @@ abstract class PrivatebinPHPBase
      */
     public function encode(): array
     {
-        $base58 = new Base58();
-
-        try {
-            $nonce = random_bytes(16);
-            $salt = random_bytes(8);
-            $password = random_bytes(32);
-        } catch (Exception $e) {
-            throw new PrivatebinException("Unable to generate random encryption material.", 0, $e);
-        }
-
-        $b58 = $base58->encode($password);
-
-        $authData = [
-            [
-                base64_encode($nonce),
-                base64_encode($salt),
-                100000,
-                256,
-                128,
-                "aes",
-                "gcm",
-                $this->options["compression"],
-            ],
-            $this->options["formatter"],
-            (int)$this->options["discussion"],
-            (int)$this->options["burn"],
-        ];
-
-        $pass = $this->options["password"]
-            ? ($password . $this->options["password"])
-            : $password;
-
-        $key = openssl_pbkdf2($pass, $salt, 32, 100000, "sha256");
-
-        if ($key === false) {
-            throw new PrivatebinException("Unable to generate encryption key.");
-        }
-
-        $pasteData = json_encode($this->getPasteData(), JSON_UNESCAPED_SLASHES);
-
-        if ($pasteData === false) {
-            throw new PrivatebinException("Unable to encode paste data.");
-        }
-
         if ($this->options["text"] === "" && $this->options["attachment"] === null) {
             throw new PrivatebinException("Empty paste. Use setAttachment() or setText() before post.");
         }
@@ -319,69 +283,16 @@ abstract class PrivatebinPHPBase
             throw new PrivatebinException("Burn and discussion cannot both be enabled.");
         }
 
-        if ($this->options["compression"] === "zlib") {
-            $zlibDef = deflate_init(ZLIB_ENCODING_RAW);
-            $paste = deflate_add($zlibDef, $pasteData, ZLIB_FINISH);
-
-            if ($paste === false) {
-                throw new PrivatebinException("Compression failed.");
-            }
-        } else {
-            $paste = $pasteData;
-        }
-
-        $aad = json_encode($authData, JSON_UNESCAPED_SLASHES);
-        if ($aad === false) {
-            throw new PrivatebinException("Unable to encode authentication data.");
-        }
-
-        $crypt = openssl_encrypt(
-            $paste,
-            "aes-256-gcm",
-            $key,
-            OPENSSL_RAW_DATA,
-            $nonce,
-            $tag,
-            $aad,
-            16
+        return $this->encryptor->encrypt(
+            $this->getPasteData(),
+            $this->options["compression"],
+            $this->options["formatter"],
+            $this->options["discussion"],
+            $this->options["burn"],
+            $this->options["expire"],
+            $this->options["password"],
+            $this->options["debug"]
         );
-
-        if ($crypt === false) {
-            throw new PrivatebinException("Encryption failed.");
-        }
-
-        $data = [
-            "v" => 2,
-            "adata" => $authData,
-            "ct" => base64_encode($crypt . $tag),
-            "meta" => [
-                "expire" => $this->options["expire"],
-            ],
-        ];
-
-        if ($this->options["debug"]) {
-            echo sprintf(
-                "Base58 Hash: %s<br>" .
-                "PBKDF2: %s<br>" .
-                "Paste Data: %s<br>" .
-                "Auth Data: <pre>%s</pre><br>" .
-                "CipherText: %s<br>" .
-                "CipherTag: %s<br>" .
-                "Post Data: <pre>%s</pre><br>",
-                $b58,
-                base64_encode($key),
-                $pasteData,
-                print_r($authData, true),
-                base64_encode($crypt),
-                base64_encode($tag),
-                print_r($data, true)
-            );
-        }
-
-        return [
-            "data" => $data,
-            "b58" => $b58,
-        ];
     }
 
     /**
@@ -501,83 +412,7 @@ abstract class PrivatebinPHPBase
      */
     public function decrypt(array $fetchResult, string $b58, ?string $password = null): array
     {
-        $base58 = new Base58();
-        $rawKey = $base58->decode($b58);
-
-        if (!isset($fetchResult["adata"], $fetchResult["ct"])) {
-            throw new PrivatebinException("Invalid fetch result.");
-        }
-
-        $adata = $fetchResult['adata'];
-        if (!is_array($adata) || !isset($adata[0][0], $adata[0][1], $adata[0][7])) {
-            throw new PrivatebinException("Invalid authentication data.");
-        }
-
-        $nonce = base64_decode($adata[0][0], true);
-        $salt = base64_decode($adata[0][1], true);
-        $compression = $adata[0][7];
-
-        if (!is_string($compression)) {
-            throw new PrivatebinException("Invalid compression type.");
-        }
-
-        if ($nonce === false || $salt === false) {
-            throw new PrivatebinException("Invalid adata: base64 decode failed.");
-        }
-
-        $pass = $password ? ($rawKey . $password) : $rawKey;
-
-        $key = openssl_pbkdf2($pass, $salt, 32, 100000, "sha256");
-
-        if ($key === false) {
-            throw new PrivatebinException("Unable to derive decryption key.");
-        }
-
-        if (!is_string($fetchResult["ct"])) {
-            throw new PrivatebinException("Invalid ciphertext.");
-        }
-
-        $ctRaw = base64_decode($fetchResult["ct"], true);
-        if ($ctRaw === false || strlen($ctRaw) < 17) {
-            throw new PrivatebinException("Invalid ciphertext.");
-        }
-
-        $crypt = substr($ctRaw, 0, -16);
-        $tag = substr($ctRaw, -16);
-
-        $aad = json_encode($adata, JSON_UNESCAPED_SLASHES);
-        if ($aad === false) {
-            throw new PrivatebinException("Failed to encode authentication data.");
-        }
-
-        $plain = openssl_decrypt($crypt, "aes-256-gcm", $key, OPENSSL_RAW_DATA, $nonce, $tag, $aad);
-
-        if ($plain === false) {
-            throw new PrivatebinException("Decryption failed.");
-        }
-
-        if ($compression === "zlib") {
-            $ctx = inflate_init(ZLIB_ENCODING_RAW);
-            $plain = inflate_add($ctx, $plain, ZLIB_FINISH);
-
-            if ($plain === false) {
-                throw new PrivatebinException("Decompression failed.");
-            }
-        } elseif ($compression !== "none") {
-            throw new PrivatebinException("Unsupported compression type.");
-        }
-
-        $data = json_decode($plain, true);
-
-        if (!is_array($data)) {
-            throw new PrivatebinException("Failed to decode decrypted payload.");
-        }
-
-        return [
-            'paste' => $data['paste'] ?? '',
-            'attachment' => $data['attachment'] ?? null,
-            'attachment_name' => $data['attachment_name'] ?? null,
-        ];
+        return $this->encryptor->decrypt($fetchResult, $b58, $password);
     }
 
     /**
