@@ -36,9 +36,14 @@ use Cyvax\Internal\Http\CurlHttpClient;
 use Cyvax\Internal\Http\HttpClientInterface;
 
 /**
+ * Core engine shared by all PrivateBin clients.
+ *
+ * Holds all state (options, HTTP client, encryptor) and implements every
+ * operation (encode, post, fetch, decrypt, delete).
+ *
  * @internal
  */
-abstract class PrivatebinPHPBase
+class PrivatebinCore
 {
     const COMPRESSION_VALUES = [
         Compression::Zlib,
@@ -100,9 +105,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param string $url
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setUrl(string $url): PrivatebinPHPBase
+    public function setUrl(string $url): PrivatebinCore
     {
         $this->options["url"] = $url;
         return $this;
@@ -110,9 +115,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param string $text
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setText(string $text): PrivatebinPHPBase
+    public function setText(string $text): PrivatebinCore
     {
         $this->options["text"] = $text;
         return $this;
@@ -120,9 +125,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param string $password
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setPassword(string $password): PrivatebinPHPBase
+    public function setPassword(string $password): PrivatebinCore
     {
         $this->options["password"] = $password;
         return $this;
@@ -131,10 +136,10 @@ abstract class PrivatebinPHPBase
     /**
      * @param string $expire
      * @param bool $bypass
-     * @return $this
+     * @return PrivatebinCore
      * @throws PrivatebinException
      */
-    public function setExpire(string $expire, bool $bypass = false): PrivatebinPHPBase
+    public function setExpire(string $expire, bool $bypass = false): PrivatebinCore
     {
         if (!in_array($expire, self::EXPIRE_VALUES, true) && !$bypass) {
             throw new PrivatebinException('$expire not in default value and $bypass is false');
@@ -147,10 +152,10 @@ abstract class PrivatebinPHPBase
     /**
      * @param string $formatter
      * @param bool $bypass
-     * @return $this
+     * @return PrivatebinCore
      * @throws PrivatebinException
      */
-    public function setFormatter(string $formatter, bool $bypass = false): PrivatebinPHPBase
+    public function setFormatter(string $formatter, bool $bypass = false): PrivatebinCore
     {
         if (!in_array($formatter, self::FORMATTER_VALUES, true) && !$bypass) {
             throw new PrivatebinException('$formatter not in default value and $bypass is false');
@@ -162,10 +167,10 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param string $compression
-     * @return $this
+     * @return PrivatebinCore
      * @throws PrivatebinException
      */
-    public function setCompression(string $compression): PrivatebinPHPBase
+    public function setCompression(string $compression): PrivatebinCore
     {
         if (!in_array($compression, self::COMPRESSION_VALUES, true)) {
             throw new PrivatebinException('Unknown compression type, expected zlib or none.');
@@ -177,9 +182,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param bool $discussion
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setDiscussion(bool $discussion): PrivatebinPHPBase
+    public function setDiscussion(bool $discussion): PrivatebinCore
     {
         if ($discussion && $this->options["burn"]) {
             $this->options["burn"] = false;
@@ -191,9 +196,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param bool $burn
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setBurn(bool $burn): PrivatebinPHPBase
+    public function setBurn(bool $burn): PrivatebinCore
     {
         if ($burn && $this->options["discussion"]) {
             $this->options["discussion"] = false;
@@ -206,10 +211,10 @@ abstract class PrivatebinPHPBase
     /**
      * @param string $fileLocation
      * @param string|null $filename
-     * @return $this
+     * @return PrivatebinCore
      * @throws PrivatebinException
      */
-    public function setAttachment(string $fileLocation, ?string $filename = null): PrivatebinPHPBase
+    public function setAttachment(string $fileLocation, ?string $filename = null): PrivatebinCore
     {
         $file = file_get_contents($fileLocation);
 
@@ -234,9 +239,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param bool $debug
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setDebug(bool $debug): PrivatebinPHPBase
+    public function setDebug(bool $debug): PrivatebinCore
     {
         $this->options["debug"] = $debug;
         return $this;
@@ -244,9 +249,9 @@ abstract class PrivatebinPHPBase
 
     /**
      * @param bool $sslVerify
-     * @return $this
+     * @return PrivatebinCore
      */
-    public function setSslVerify(bool $sslVerify): PrivatebinPHPBase
+    public function setSslVerify(bool $sslVerify): PrivatebinCore
     {
         $this->options["ssl_verify"] = $sslVerify;
         return $this;
