@@ -28,7 +28,9 @@ SOFTWARE.
 
 namespace Cyvax\Internal;
 
-use Cyvax\Encoding\Base58;
+use Cyvax\Enums\Compression;
+use Cyvax\Enums\Expire;
+use Cyvax\Enums\Formatter;
 use Cyvax\Exceptions\PrivatebinException;
 use Exception;
 
@@ -38,25 +40,25 @@ use Exception;
 abstract class PrivatebinPHPBase
 {
     const COMPRESSION_VALUES = [
-        "zlib",
-        "none",
+        Compression::Zlib,
+        Compression::None,
     ];
 
     const EXPIRE_VALUES = [
-        "5min",
-        "10min",
-        "1hour",
-        "1day",
-        "1week",
-        "1month",
-        "1year",
-        "never",
+        Expire::FiveMin,
+        Expire::TenMin,
+        Expire::OneHour,
+        Expire::OneDay,
+        Expire::OneWeek,
+        Expire::OneMonth,
+        Expire::OneYear,
+        Expire::Never,
     ];
 
     const FORMATTER_VALUES = [
-        "plaintext",
-        "syntaxhighlighting",
-        "markdown",
+        Formatter::Plaintext,
+        Formatter::SyntaxHighlighting,
+        Formatter::Markdown,
     ];
 
     protected $options = [
