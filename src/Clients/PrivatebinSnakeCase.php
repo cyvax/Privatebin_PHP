@@ -30,7 +30,9 @@ namespace Cyvax\Clients;
 
 use Cyvax\Contracts\PrivatebinSnakeCaseClientInterface;
 use Cyvax\Exceptions\PrivatebinException;
-use Cyvax\Internal\PrivatebinPHPBase;
+use Cyvax\Internal\Http\HttpClientInterface;
+use Cyvax\Internal\PasteEncryptorInterface;
+use Cyvax\Internal\PrivatebinCore;
 
 /**
  * Snake_case PrivateBin client.
@@ -45,15 +47,31 @@ use Cyvax\Internal\PrivatebinPHPBase;
  *       ->set_expire("1hour")
  *       ->encode_and_post();
  */
-class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCaseClientInterface
+class PrivatebinSnakeCase implements PrivatebinSnakeCaseClientInterface
 {
+    private PrivatebinCore $core;
+
+    /**
+     * @param array $options
+     * @param HttpClientInterface|null $httpClient
+     * @param PasteEncryptorInterface|null $encryptor
+     */
+    public function __construct(
+        array $options = [],
+        ?HttpClientInterface $httpClient = null,
+        ?PasteEncryptorInterface $encryptor = null
+    ) {
+        $this->core = new PrivatebinCore($options, $httpClient, $encryptor);
+    }
+
     /**
      * @param string $url
      * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_url(string $url): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setUrl($url);
+        $this->core->setUrl($url);
+        return $this;
     }
 
     /**
@@ -62,7 +80,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_text(string $text): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setText($text);
+        $this->core->setText($text);
+        return $this;
     }
 
     /**
@@ -71,7 +90,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_password(string $password): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setPassword($password);
+        $this->core->setPassword($password);
+        return $this;
     }
 
     /**
@@ -82,7 +102,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_expire(string $expire, bool $bypass = false): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setExpire($expire, $bypass);
+        $this->core->setExpire($expire, $bypass);
+        return $this;
     }
 
     /**
@@ -93,7 +114,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_formatter(string $formatter, bool $bypass = false): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setFormatter($formatter, $bypass);
+        $this->core->setFormatter($formatter, $bypass);
+        return $this;
     }
 
     /**
@@ -103,7 +125,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_compression(string $compression): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setCompression($compression);
+        $this->core->setCompression($compression);
+        return $this;
     }
 
     /**
@@ -112,7 +135,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_discussion(bool $discussion): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setDiscussion($discussion);
+        $this->core->setDiscussion($discussion);
+        return $this;
     }
 
     /**
@@ -121,7 +145,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_burn(bool $burn): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setBurn($burn);
+        $this->core->setBurn($burn);
+        return $this;
     }
 
     /**
@@ -132,7 +157,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_attachment(string $file_location, ?string $filename = null): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setAttachment($file_location, $filename);
+        $this->core->setAttachment($file_location, $filename);
+        return $this;
     }
 
     /**
@@ -141,7 +167,8 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_debug(bool $debug): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setDebug($debug);
+        $this->core->setDebug($debug);
+        return $this;
     }
 
     /**
@@ -150,7 +177,27 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function set_ssl_verify(bool $ssl_verify): PrivatebinSnakeCaseClientInterface
     {
-        return $this->setSslVerify($ssl_verify);
+        $this->core->setSslVerify($ssl_verify);
+        return $this;
+    }
+
+    /**
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function encode(): array
+    {
+        return $this->core->encode();
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function post(array $data): array
+    {
+        return $this->core->post($data);
     }
 
     /**
@@ -159,7 +206,29 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function encode_and_post(): array
     {
-        return $this->encodeAndPost();
+        return $this->core->encodeAndPost();
+    }
+
+    /**
+     * @param string $id
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function fetch(string $id): array
+    {
+        return $this->core->fetch($id);
+    }
+
+    /**
+     * @param array $fetchResult
+     * @param string $b58
+     * @param string|null $password
+     * @return array{paste: string, attachment: string|null, attachment_name: string|null}
+     * @throws PrivatebinException
+     */
+    public function decrypt(array $fetchResult, string $b58, ?string $password = null): array
+    {
+        return $this->core->decrypt($fetchResult, $b58, $password);
     }
 
     /**
@@ -171,6 +240,17 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
      */
     public function fetch_and_decrypt(string $id, string $b58, ?string $password = null): array
     {
-        return $this->fetchAndDecrypt($id, $b58, $password);
+        return $this->core->fetchAndDecrypt($id, $b58, $password);
+    }
+
+    /**
+     * @param string $paste_id
+     * @param string $delete_token
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function delete(string $paste_id, string $delete_token): array
+    {
+        return $this->core->delete($paste_id, $delete_token);
     }
 }
