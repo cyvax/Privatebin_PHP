@@ -144,4 +144,12 @@ interface PrivatebinClientInterface
      * @return array{paste: string, attachment: string|null, attachment_name: string|null}
      */
     public function fetchAndDecrypt(string $id, string $b58, ?string $password = null): array;
+
+    /**
+     * Delete a paste using its ID and delete token.
+     * @param string $pasteId
+     * @param string $deleteToken
+     * @return array{id: string}
+     */
+    public function delete(string $pasteId, string $deleteToken): array;
 }

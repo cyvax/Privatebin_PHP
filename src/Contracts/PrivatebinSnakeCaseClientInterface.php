@@ -12,7 +12,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param string $password
      * @return $this
      */
-    public function set_password(string $password);
+    public function set_password(string $password): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Set PrivateBin instance URL.
@@ -20,7 +20,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param string $url
      * @return $this
      */
-    public function set_url(string $url);
+    public function set_url(string $url): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Set paste formatter.
@@ -29,7 +29,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param bool   $bypass Allow values outside FORMATTER_VALUES
      * @return $this
      */
-    public function set_formatter(string $formatter, bool $bypass = false);
+    public function set_formatter(string $formatter, bool $bypass = false): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Set the attachment; use file_location as a file path.
@@ -38,7 +38,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param string|null $filename Override the attachment filename
      * @return $this
      */
-    public function set_attachment(string $file_location, ?string $filename = null);
+    public function set_attachment(string $file_location, ?string $filename = null): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Set the text of the paste.
@@ -46,7 +46,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param string $text
      * @return $this
      */
-    public function set_text(string $text);
+    public function set_text(string $text): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Set compression method.
@@ -54,7 +54,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param string $compression "zlib" or "none"
      * @return $this
      */
-    public function set_compression(string $compression);
+    public function set_compression(string $compression): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Enable or disable discussion (default: false).
@@ -63,7 +63,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param bool $discussion
      * @return $this
      */
-    public function set_discussion(bool $discussion);
+    public function set_discussion(bool $discussion): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Enable or disable burn-after-reading (default: false).
@@ -72,7 +72,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param bool $burn
      * @return $this
      */
-    public function set_burn(bool $burn);
+    public function set_burn(bool $burn): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Enable or disable debug output (default: false).
@@ -80,7 +80,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param bool $debug
      * @return $this
      */
-    public function set_debug(bool $debug);
+    public function set_debug(bool $debug): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Enable or disable SSL certificate verification (default: true).
@@ -89,7 +89,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param bool $ssl_verify
      * @return $this
      */
-    public function set_ssl_verify(bool $ssl_verify);
+    public function set_ssl_verify(bool $ssl_verify): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Set expiry time (default: "1day").
@@ -99,7 +99,7 @@ interface PrivatebinSnakeCaseClientInterface
      * @param bool   $bypass
      * @return $this
      */
-    public function set_expire(string $expire, bool $bypass = false);
+    public function set_expire(string $expire, bool $bypass = false): PrivatebinSnakeCaseClientInterface;
 
     /**
      * Encode paste into an encrypted payload ready to post.
@@ -144,4 +144,12 @@ interface PrivatebinSnakeCaseClientInterface
      * @return array{paste: string, attachment: string|null, attachment_name: string|null}
      */
     public function fetch_and_decrypt(string $id, string $b58, ?string $password = null): array;
+
+    /**
+     * Delete a paste using its ID and delete token.
+     * @param string $paste_id
+     * @param string $delete_token
+     * @return array{id: string}
+     */
+    public function delete(string $paste_id, string $delete_token): array;
 }

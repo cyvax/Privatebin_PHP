@@ -49,27 +49,27 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
 {
     /**
      * @param string $url
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_url(string $url): PrivatebinSnakeCase
+    public function set_url(string $url): PrivatebinSnakeCaseClientInterface
     {
         return $this->setUrl($url);
     }
 
     /**
      * @param string $text
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_text(string $text): PrivatebinSnakeCase
+    public function set_text(string $text): PrivatebinSnakeCaseClientInterface
     {
         return $this->setText($text);
     }
 
     /**
      * @param string $password
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_password(string $password): PrivatebinSnakeCase
+    public function set_password(string $password): PrivatebinSnakeCaseClientInterface
     {
         return $this->setPassword($password);
     }
@@ -77,10 +77,10 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
     /**
      * @param string $expire
      * @param bool $bypass
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      * @throws PrivatebinException
      */
-    public function set_expire(string $expire, bool $bypass = false): PrivatebinSnakeCase
+    public function set_expire(string $expire, bool $bypass = false): PrivatebinSnakeCaseClientInterface
     {
         return $this->setExpire($expire, $bypass);
     }
@@ -88,38 +88,38 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
     /**
      * @param string $formatter
      * @param bool $bypass
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      * @throws PrivatebinException
      */
-    public function set_formatter(string $formatter, bool $bypass = false): PrivatebinSnakeCase
+    public function set_formatter(string $formatter, bool $bypass = false): PrivatebinSnakeCaseClientInterface
     {
         return $this->setFormatter($formatter, $bypass);
     }
 
     /**
      * @param string $compression
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      * @throws PrivatebinException
      */
-    public function set_compression(string $compression): PrivatebinSnakeCase
+    public function set_compression(string $compression): PrivatebinSnakeCaseClientInterface
     {
         return $this->setCompression($compression);
     }
 
     /**
      * @param bool $discussion
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_discussion(bool $discussion): PrivatebinSnakeCase
+    public function set_discussion(bool $discussion): PrivatebinSnakeCaseClientInterface
     {
         return $this->setDiscussion($discussion);
     }
 
     /**
      * @param bool $burn
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_burn(bool $burn): PrivatebinSnakeCase
+    public function set_burn(bool $burn): PrivatebinSnakeCaseClientInterface
     {
         return $this->setBurn($burn);
     }
@@ -127,27 +127,28 @@ class PrivatebinSnakeCase extends PrivatebinPHPBase implements PrivatebinSnakeCa
     /**
      * @param string $file_location
      * @param string|null $filename
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
+     * @throws PrivatebinException
      */
-    public function set_attachment(string $file_location, ?string $filename = null): PrivatebinSnakeCase
+    public function set_attachment(string $file_location, ?string $filename = null): PrivatebinSnakeCaseClientInterface
     {
         return $this->setAttachment($file_location, $filename);
     }
 
     /**
      * @param bool $debug
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_debug(bool $debug): PrivatebinSnakeCase
+    public function set_debug(bool $debug): PrivatebinSnakeCaseClientInterface
     {
         return $this->setDebug($debug);
     }
 
     /**
      * @param bool $ssl_verify
-     * @return PrivatebinSnakeCase
+     * @return PrivatebinSnakeCaseClientInterface
      */
-    public function set_ssl_verify(bool $ssl_verify): PrivatebinSnakeCase
+    public function set_ssl_verify(bool $ssl_verify): PrivatebinSnakeCaseClientInterface
     {
         return $this->setSslVerify($ssl_verify);
     }

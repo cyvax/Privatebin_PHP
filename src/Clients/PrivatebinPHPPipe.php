@@ -244,4 +244,15 @@ class PrivatebinPHPPipe
             return $client->decrypt($fetchResult, $b58, $password);
         };
     }
+
+    /**
+     * Delete a paste - use as a terminal stage.
+     * @return Closure(PrivatebinPHP): array
+     */
+    public static function delete(string $pasteId, string $deleteToken): Closure
+    {
+        return function (PrivatebinPHP $client) use ($pasteId, $deleteToken): array {
+            return $client->delete($pasteId, $deleteToken);
+        };
+    }
 }
