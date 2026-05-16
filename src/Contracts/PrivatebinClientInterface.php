@@ -10,25 +10,25 @@ interface PrivatebinClientInterface
      * Set PrivateBin instance URL.
      * Returns $this for fluent chaining.
      * @param string $url
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setUrl(string $url);
+    public function setUrl(string $url): PrivatebinClientInterface;
 
     /**
      * Set the text of the paste.
      * Returns $this for fluent chaining.
      * @param string $text
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setText(string $text);
+    public function setText(string $text): PrivatebinClientInterface;
 
     /**
      * Set paste password.
      * Returns $this for fluent chaining.
      * @param string $password
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setPassword(string $password);
+    public function setPassword(string $password): PrivatebinClientInterface;
 
     /**
      * Set expiry time (default: "1day").
@@ -36,70 +36,70 @@ interface PrivatebinClientInterface
      * Returns $this for fluent chaining.
      * @param string $expire
      * @param bool   $bypass
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setExpire(string $expire, bool $bypass = false);
+    public function setExpire(string $expire, bool $bypass = false): PrivatebinClientInterface;
 
     /**
      * Set paste formatter.
      * Returns $this for fluent chaining.
      * @param string $formatter
      * @param bool   $bypass Allow values outside FORMATTER_VALUES
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setFormatter(string $formatter, bool $bypass = false);
+    public function setFormatter(string $formatter, bool $bypass = false): PrivatebinClientInterface;
 
     /**
      * Set compression method.
      * Returns $this for fluent chaining.
      * @param string $compression "zlib" or "none"
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setCompression(string $compression);
+    public function setCompression(string $compression): PrivatebinClientInterface;
 
     /**
      * Enable or disable discussion (default: false).
      * Setting this to true will disable burn if it is active.
      * Returns $this for fluent chaining.
      * @param bool $discussion
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setDiscussion(bool $discussion);
+    public function setDiscussion(bool $discussion): PrivatebinClientInterface;
 
     /**
      * Enable or disable burn-after-reading (default: false).
      * Setting this to true will disable discussion if it is active.
      * Returns $this for fluent chaining.
      * @param bool $burn
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setBurn(bool $burn);
+    public function setBurn(bool $burn): PrivatebinClientInterface;
 
     /**
      * Set the attachment; use fileLocation as a file path.
      * Returns $this for fluent chaining.
      * @param string      $fileLocation
      * @param string|null $filename Override the attachment filename
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setAttachment(string $fileLocation, ?string $filename = null);
+    public function setAttachment(string $fileLocation, ?string $filename = null): PrivatebinClientInterface;
 
     /**
      * Enable or disable debug output (default: false).
      * Returns $this for fluent chaining.
      * @param bool $debug
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setDebug(bool $debug);
+    public function setDebug(bool $debug): PrivatebinClientInterface;
 
     /**
      * Enable or disable SSL certificate verification (default: true).
      * Disable only for local or self-signed instances.
      * Returns $this for fluent chaining.
      * @param bool $sslVerify
-     * @return $this
+     * @return PrivatebinClientInterface
      */
-    public function setSslVerify(bool $sslVerify);
+    public function setSslVerify(bool $sslVerify): PrivatebinClientInterface;
 
     /**
      * Encode paste into an encrypted payload ready to post.

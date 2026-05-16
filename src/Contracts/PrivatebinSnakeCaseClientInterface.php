@@ -10,7 +10,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Set paste password.
      * Returns $this for fluent chaining.
      * @param string $password
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_password(string $password): PrivatebinSnakeCaseClientInterface;
 
@@ -18,7 +18,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Set PrivateBin instance URL.
      * Returns $this for fluent chaining.
      * @param string $url
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_url(string $url): PrivatebinSnakeCaseClientInterface;
 
@@ -27,7 +27,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Returns $this for fluent chaining.
      * @param string $formatter
      * @param bool   $bypass Allow values outside FORMATTER_VALUES
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_formatter(string $formatter, bool $bypass = false): PrivatebinSnakeCaseClientInterface;
 
@@ -36,7 +36,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Returns $this for fluent chaining.
      * @param string      $file_location
      * @param string|null $filename Override the attachment filename
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_attachment(string $file_location, ?string $filename = null): PrivatebinSnakeCaseClientInterface;
 
@@ -44,7 +44,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Set the text of the paste.
      * Returns $this for fluent chaining.
      * @param string $text
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_text(string $text): PrivatebinSnakeCaseClientInterface;
 
@@ -52,7 +52,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Set compression method.
      * Returns $this for fluent chaining.
      * @param string $compression "zlib" or "none"
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_compression(string $compression): PrivatebinSnakeCaseClientInterface;
 
@@ -61,7 +61,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Setting this to true will disable burn if it is active.
      * Returns $this for fluent chaining.
      * @param bool $discussion
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_discussion(bool $discussion): PrivatebinSnakeCaseClientInterface;
 
@@ -70,7 +70,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Setting this to true will disable discussion if it is active.
      * Returns $this for fluent chaining.
      * @param bool $burn
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_burn(bool $burn): PrivatebinSnakeCaseClientInterface;
 
@@ -78,7 +78,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Enable or disable debug output (default: false).
      * Returns $this for fluent chaining.
      * @param bool $debug
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_debug(bool $debug): PrivatebinSnakeCaseClientInterface;
 
@@ -87,7 +87,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Disable only for local or self-signed instances.
      * Returns $this for fluent chaining.
      * @param bool $ssl_verify
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_ssl_verify(bool $ssl_verify): PrivatebinSnakeCaseClientInterface;
 
@@ -97,7 +97,7 @@ interface PrivatebinSnakeCaseClientInterface
      * Returns $this for fluent chaining.
      * @param string $expire
      * @param bool   $bypass
-     * @return $this
+     * @return PrivatebinSnakeCaseClientInterface
      */
     public function set_expire(string $expire, bool $bypass = false): PrivatebinSnakeCaseClientInterface;
 

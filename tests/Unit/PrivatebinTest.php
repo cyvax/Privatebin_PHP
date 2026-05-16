@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Cyvax\Tests\Unit;
 
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 use Cyvax\Exceptions\PrivatebinException;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionProperty;
 
-final class PrivatebinPHPTest extends TestCase
+final class PrivatebinTest extends TestCase
 {
     public function testItCanBeCreated(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
-        $this->assertInstanceOf(PrivatebinPHP::class, $client);
+        $this->assertInstanceOf(Privatebin::class, $client);
     }
 
     public function testSettersAreFluent(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
         $this->assertSame($client, $client->setUrl("https://privatebin.net/"));
         $this->assertSame($client, $client->setText("Hello"));
@@ -38,7 +38,7 @@ final class PrivatebinPHPTest extends TestCase
     {
         $this->expectException(PrivatebinException::class);
 
-        new PrivatebinPHP()->setExpire("invalid");
+        new Privatebin()->setExpire("invalid");
     }
 
     /**
@@ -46,7 +46,7 @@ final class PrivatebinPHPTest extends TestCase
      */
     public function testInvalidExpireCanBeBypassed(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
         $this->assertSame($client, $client->setExpire("custom-expire", true));
     }
@@ -55,12 +55,12 @@ final class PrivatebinPHPTest extends TestCase
     {
         $this->expectException(PrivatebinException::class);
 
-        new PrivatebinPHP()->setFormatter("invalid");
+        new Privatebin()->setFormatter("invalid");
     }
 
     public function testInvalidFormatterCanBeBypassed(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
         $this->assertSame($client, $client->setFormatter("custom-formatter", true));
     }
@@ -69,12 +69,12 @@ final class PrivatebinPHPTest extends TestCase
     {
         $this->expectException(PrivatebinException::class);
 
-        new PrivatebinPHP()->setCompression("gzip");
+        new Privatebin()->setCompression("gzip");
     }
 
     public function testDiscussionDisablesBurn(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
         $client
             ->setBurn(true)
@@ -88,7 +88,7 @@ final class PrivatebinPHPTest extends TestCase
 
     public function testBurnDisablesDiscussion(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
         $client
             ->setDiscussion(true)
@@ -102,7 +102,7 @@ final class PrivatebinPHPTest extends TestCase
 
     public function testAttachmentCanBeSet(): void
     {
-        $client = new PrivatebinPHP();
+        $client = new Privatebin();
 
         $client->setAttachment(dirname(__DIR__) . "/fixtures/attachment.txt", "custom.txt");
 
@@ -118,7 +118,7 @@ final class PrivatebinPHPTest extends TestCase
      */
     public function testEncodeReturnsDataAndB58(): void
     {
-        $result = new PrivatebinPHP()
+        $result = new Privatebin()
             ->setText("Hello")
             ->encode();
 
@@ -133,14 +133,13 @@ final class PrivatebinPHPTest extends TestCase
     }
 
     /**
-     * @param PrivatebinPHP $client
+     * @param Privatebin $client
      * @return array
      * @throws ReflectionException
      */
-    private function getOptions(PrivatebinPHP $client): array
+    private function getOptions(Privatebin $client): array
     {
-        $property = new ReflectionProperty($client, "options");
-
-        return $property->getValue($client);
+        $core = (new ReflectionProperty($client, 'core'))->getValue($client);
+        return (new ReflectionProperty($core, 'options'))->getValue($core);
     }
 }

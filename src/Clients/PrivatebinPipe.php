@@ -54,7 +54,7 @@ use Closure;
  * Each method except init() returns a Closure that accepts a PrivatebinPHP
  * instance and calls the corresponding setter on it.
  */
-class PrivatebinPHPPipe
+class PrivatebinPipe
 {
     /**
      * Create a new PrivatebinPHP instance.
@@ -71,7 +71,7 @@ class PrivatebinPHPPipe
      * @param bool $debug
      * @param bool $sslVerify
      * @param array $options Any extra options to merge
-     * @return PrivatebinPHP
+     * @return Privatebin
      */
     public static function init(
         string  $url = "https://paste.i2pd.xyz/",
@@ -85,9 +85,9 @@ class PrivatebinPHPPipe
         bool    $debug = false,
         bool    $sslVerify = true,
         array   $options = []
-    ): PrivatebinPHP
+    ): Privatebin
     {
-        return PrivatebinPHP::init(
+        return Privatebin::init(
             $url,
             $text,
             $password,
@@ -102,156 +102,156 @@ class PrivatebinPHPPipe
         );
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function url(string $url): Closure
     {
-        return function (PrivatebinPHP $client) use ($url): PrivatebinPHP {
+        return function (Privatebin $client) use ($url): Privatebin {
             return $client->setUrl($url);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function text(string $text): Closure
     {
-        return function (PrivatebinPHP $client) use ($text): PrivatebinPHP {
+        return function (Privatebin $client) use ($text): Privatebin {
             return $client->setText($text);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function password(string $password): Closure
     {
-        return function (PrivatebinPHP $client) use ($password): PrivatebinPHP {
+        return function (Privatebin $client) use ($password): Privatebin {
             return $client->setPassword($password);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function expire(string $expire, bool $bypass = false): Closure
     {
-        return function (PrivatebinPHP $client) use ($expire, $bypass): PrivatebinPHP {
+        return function (Privatebin $client) use ($expire, $bypass): Privatebin {
             return $client->setExpire($expire, $bypass);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function formatter(string $formatter, bool $bypass = false): Closure
     {
-        return function (PrivatebinPHP $client) use ($formatter, $bypass): PrivatebinPHP {
+        return function (Privatebin $client) use ($formatter, $bypass): Privatebin {
             return $client->setFormatter($formatter, $bypass);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function compression(string $compression): Closure
     {
-        return function (PrivatebinPHP $client) use ($compression): PrivatebinPHP {
+        return function (Privatebin $client) use ($compression): Privatebin {
             return $client->setCompression($compression);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function discussion(bool $discussion): Closure
     {
-        return function (PrivatebinPHP $client) use ($discussion): PrivatebinPHP {
+        return function (Privatebin $client) use ($discussion): Privatebin {
             return $client->setDiscussion($discussion);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function burn(bool $burn): Closure
     {
-        return function (PrivatebinPHP $client) use ($burn): PrivatebinPHP {
+        return function (Privatebin $client) use ($burn): Privatebin {
             return $client->setBurn($burn);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function attachment(string $fileLocation, ?string $filename = null): Closure
     {
-        return function (PrivatebinPHP $client) use ($fileLocation, $filename): PrivatebinPHP {
+        return function (Privatebin $client) use ($fileLocation, $filename): Privatebin {
             return $client->setAttachment($fileLocation, $filename);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function debug(bool $debug): Closure
     {
-        return function (PrivatebinPHP $client) use ($debug): PrivatebinPHP {
+        return function (Privatebin $client) use ($debug): Privatebin {
             return $client->setDebug($debug);
         };
     }
 
-    /** @return Closure(PrivatebinPHP): PrivatebinPHP */
+    /** @return Closure(Privatebin): Privatebin */
     public static function sslVerify(bool $sslVerify): Closure
     {
-        return function (PrivatebinPHP $client) use ($sslVerify): PrivatebinPHP {
+        return function (Privatebin $client) use ($sslVerify): Privatebin {
             return $client->setSslVerify($sslVerify);
         };
     }
 
     /**
      * Encode and post - use as the final stage of a |> pipe chain.
-     * @return Closure(PrivatebinPHP): array
+     * @return Closure(Privatebin): array
      */
     public static function encodeAndPost(): Closure
     {
-        return function (PrivatebinPHP $client): array {
+        return function (Privatebin $client): array {
             return $client->encodeAndPost();
         };
     }
 
     /**
      * Encode only - use when you want to call post() separately.
-     * @return Closure(PrivatebinPHP): array
+     * @return Closure(Privatebin): array
      */
     public static function encode(): Closure
     {
-        return function (PrivatebinPHP $client): array {
+        return function (Privatebin $client): array {
             return $client->encode();
         };
     }
 
     /**
      * Fetch a paste's encrypted payload - use as a terminal stage.
-     * @return Closure(PrivatebinPHP): array
+     * @return Closure(Privatebin): array
      */
     public static function fetch(string $id): Closure
     {
-        return function (PrivatebinPHP $client) use ($id): array {
+        return function (Privatebin $client) use ($id): array {
             return $client->fetch($id);
         };
     }
 
     /**
      * Fetch and decrypt a paste - use as a terminal stage.
-     * @return Closure(PrivatebinPHP): array
+     * @return Closure(Privatebin): array
      */
     public static function fetchAndDecrypt(string $id, string $b58, ?string $password = null): Closure
     {
-        return function (PrivatebinPHP $client) use ($id, $b58, $password): array {
+        return function (Privatebin $client) use ($id, $b58, $password): array {
             return $client->fetchAndDecrypt($id, $b58, $password);
         };
     }
 
     /**
      * Decrypt a fetched payload - use as a terminal stage.
-     * @return Closure(PrivatebinPHP): array
+     * @return Closure(Privatebin): array
      */
     public static function decrypt(array $fetchResult, string $b58, ?string $password = null): Closure
     {
-        return function (PrivatebinPHP $client) use ($fetchResult, $b58, $password): array {
+        return function (Privatebin $client) use ($fetchResult, $b58, $password): array {
             return $client->decrypt($fetchResult, $b58, $password);
         };
     }
 
     /**
      * Delete a paste - use as a terminal stage.
-     * @return Closure(PrivatebinPHP): array
+     * @return Closure(Privatebin): array
      */
     public static function delete(string $pasteId, string $deleteToken): Closure
     {
-        return function (PrivatebinPHP $client) use ($pasteId, $deleteToken): array {
+        return function (Privatebin $client) use ($pasteId, $deleteToken): array {
             return $client->delete($pasteId, $deleteToken);
         };
     }

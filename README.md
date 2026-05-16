@@ -47,9 +47,9 @@ You can override it with `setUrl()` or via constructor options.
 ## Modern camelCase API
 
 ```php
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 
-$result = (new PrivatebinPHP())
+$result = (new Privatebin())
     ->setUrl("https://privatebin.net/")
     ->setText("Because ignorance is bliss!")
     ->setExpire("1hour")
@@ -61,9 +61,9 @@ $result = (new PrivatebinPHP())
 `PrivatebinPHP::init()` supports named parameters for a more concise setup on PHP 8+:
 
 ```php
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 
-$result = PrivatebinPHP::init(
+$result = Privatebin::init(
     url: "https://privatebin.net/",
     text: "Because ignorance is bliss!",
     expire: "1hour",
@@ -95,9 +95,9 @@ $result = (new PrivatebinSnakeCase())
 Both clients accept an options array in their constructor:
 
 ```php
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 
-$result = (new PrivatebinPHP([
+$result = (new Privatebin([
     "url"  => "https://privatebin.net/",
     "text" => "Because ignorance is bliss!",
 ]))->encodeAndPost();
@@ -108,9 +108,9 @@ $result = (new PrivatebinPHP([
 ## Attachments
 
 ```php
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 
-$result = (new PrivatebinPHP())
+$result = (new Privatebin())
     ->setAttachment("/path/to/image.png")
     ->encodeAndPost();
 ```
@@ -131,9 +131,9 @@ An optional second argument overrides the attachment filename:
 SSL verification is enabled by default. Disable it only for local or self-signed instances:
 
 ```php
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 
-$result = (new PrivatebinPHP())
+$result = (new Privatebin())
     ->setUrl("https://local.privatebin/")
     ->setSslVerify(false)
     ->setText("Hello!")
@@ -151,12 +151,12 @@ The `ssl_verify` key is also accepted in the constructor options array and in `P
 On PHP versions supporting the pipe operator:
 
 ```php
-use Cyvax\Clients\PrivatebinPHPPipe;
+use Cyvax\Clients\PrivatebinPipe;
 
-$result = PrivatebinPHPPipe::init("https://privatebin.net/")
-    |> PrivatebinPHPPipe::text("Hello!")
-    |> PrivatebinPHPPipe::expire("1hour")
-    |> PrivatebinPHPPipe::encodeAndPost();
+$result = PrivatebinPipe::init("https://privatebin.net/")
+    |> PrivatebinPipe::text("Hello!")
+    |> PrivatebinPipe::expire("1hour")
+    |> PrivatebinPipe::encodeAndPost();
 ```
 
 Without pipe support, it is recommended to use `PrivatebinPHP` or `PrivatebinSnakeCase` directly.
@@ -164,14 +164,14 @@ Without pipe support, it is recommended to use `PrivatebinPHP` or `PrivatebinSna
 If needed, closures can still be invoked manually:
 
 ```php
-use Cyvax\Clients\PrivatebinPHPPipe;
+use Cyvax\Clients\PrivatebinPipe;
 
-$client = PrivatebinPHPPipe::init("https://privatebin.net/");
+$client = PrivatebinPipe::init("https://privatebin.net/");
 
-$client = PrivatebinPHPPipe::text("Hello!")($client);
-$client = PrivatebinPHPPipe::expire("1hour")($client);
+$client = PrivatebinPipe::text("Hello!")($client);
+$client = PrivatebinPipe::expire("1hour")($client);
 
-$result = PrivatebinPHPPipe::encodeAndPost()($client);
+$result = PrivatebinPipe::encodeAndPost()($client);
 ```
 
 ---
@@ -179,9 +179,9 @@ $result = PrivatebinPHPPipe::encodeAndPost()($client);
 ## Fetching and Decrypting
 
 ```php
-use Cyvax\Clients\PrivatebinPHP;
+use Cyvax\Clients\Privatebin;
 
-$client = new PrivatebinPHP();
+$client = new Privatebin();
 
 // Fetch and decrypt in one call
 $data = $client->fetchAndDecrypt($pasteId, $b58);
@@ -194,10 +194,10 @@ echo $data['paste'];
 
 # Interfaces
 
-| Interface | Namespace | Used by |
-|---|---|---|
-| `PrivatebinClientInterface` | `Cyvax\Contracts` | `PrivatebinPHP` (camelCase) |
-| `PrivatebinSnakeCaseClientInterface` | `Cyvax\Contracts` | `PrivatebinSnakeCase` |
+| Interface                            | Namespace         | Used by                     |
+|--------------------------------------|-------------------|-----------------------------|
+| `PrivatebinClientInterface`          | `Cyvax\Contracts` | `PrivatebinPHP` (camelCase) |
+| `PrivatebinSnakeCaseClientInterface` | `Cyvax\Contracts` | `PrivatebinSnakeCase`       |
 
 Type-hint against an interface when you want to swap implementations:
 

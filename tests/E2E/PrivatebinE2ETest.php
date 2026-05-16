@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cyvax\Tests\E2E;
 
-use Cyvax\Clients\PrivatebinPHP;
-use Cyvax\Clients\PrivatebinPHPPipe;
+use Cyvax\Clients\Privatebin;
+use Cyvax\Clients\PrivatebinPipe;
 use Cyvax\Clients\PrivatebinSnakeCase;
 use Cyvax\Encoding\Base58;
 use Cyvax\Exceptions\PrivatebinException;
@@ -49,7 +49,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanEncodeAndPostText(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E modern client')
             ->setExpire('5min')
@@ -64,7 +64,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanEncodeThenPost(): void
     {
-        $client = (new PrivatebinPHP())
+        $client = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E encode then post')
             ->setExpire('5min');
@@ -81,7 +81,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanPostPasswordProtectedPaste(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E password protected')
             ->setPassword('secret')
@@ -93,7 +93,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanPostWithoutCompression(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E no compression')
             ->setCompression('none')
@@ -104,7 +104,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanPostMarkdown(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('# E2E markdown')
             ->setFormatter('markdown')
@@ -115,7 +115,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanPostWithDiscussionEnabled(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E discussion')
             ->setDiscussion(true)
@@ -126,7 +126,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanPostBurnAfterReading(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E burn')
             ->setBurn(true)
@@ -134,7 +134,7 @@ final class PrivatebinE2ETest extends TestCase
 
         $this->assertPostResult($result, decrypt: false);
 
-        $client = (new PrivatebinPHP())->setUrl(self::URL);
+        $client = (new Privatebin())->setUrl(self::URL);
 
         $decrypted = $client->fetchAndDecrypt($result['requests_result']->id, $result['b58']);
         $this->assertSame('E2E burn', $decrypted['paste']);
@@ -145,7 +145,7 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testModernClientCanPostAttachment(): void
     {
-        $result = (new PrivatebinPHP())
+        $result = (new Privatebin())
             ->setUrl(self::URL)
             ->setText('E2E attachment')
             ->setAttachment(dirname(__DIR__) . '/Fixtures/attachment.txt', 'attachment.txt')
@@ -153,7 +153,7 @@ final class PrivatebinE2ETest extends TestCase
 
         $this->assertPostResult($result, expectedText: 'E2E attachment');
 
-        $decrypted = (new PrivatebinPHP())
+        $decrypted = (new Privatebin())
             ->setUrl(self::URL)
             ->fetchAndDecrypt($result['requests_result']->id, $result['b58']);
 
@@ -194,15 +194,15 @@ final class PrivatebinE2ETest extends TestCase
 
     public function testPipeClientCanEncodeAndPost(): void
     {
-        $result = PrivatebinPHPPipe::init(self::URL)
-            |> PrivatebinPHPPipe::text('E2E pipe client')
-            |> PrivatebinPHPPipe::expire('5min')
-            |> PrivatebinPHPPipe::formatter('plaintext')
-            |> PrivatebinPHPPipe::compression('zlib')
-            |> PrivatebinPHPPipe::discussion(false)
-            |> PrivatebinPHPPipe::burn(false)
-            |> PrivatebinPHPPipe::debug(false)
-            |> PrivatebinPHPPipe::encodeAndPost();
+        $result = PrivatebinPipe::init(self::URL)
+            |> PrivatebinPipe::text('E2E pipe client')
+            |> PrivatebinPipe::expire('5min')
+            |> PrivatebinPipe::formatter('plaintext')
+            |> PrivatebinPipe::compression('zlib')
+            |> PrivatebinPipe::discussion(false)
+            |> PrivatebinPipe::burn(false)
+            |> PrivatebinPipe::debug(false)
+            |> PrivatebinPipe::encodeAndPost();
 
         $this->assertPostResult($result, expectedText: 'E2E pipe client');
     }
@@ -212,7 +212,7 @@ final class PrivatebinE2ETest extends TestCase
      */
     public function testPasteExpiresAfterTtl(): void
     {
-        $result = new PrivatebinPHP()
+        $result = new Privatebin()
             ->setUrl(self::URL)
             ->setText('E2E expire test')
             ->setExpire('10sec', true)
@@ -223,14 +223,14 @@ final class PrivatebinE2ETest extends TestCase
         sleep(15);
 
         $this->expectException(PrivatebinException::class);
-        new PrivatebinPHP()->setUrl(self::URL)->fetch($result['requests_result']->id);
+        new Privatebin()->setUrl(self::URL)->fetch($result['requests_result']->id);
     }
 
     public function testPipeClientCanEncodeOnly(): void
     {
-        $encoded = PrivatebinPHPPipe::init(self::URL)
-            |> PrivatebinPHPPipe::text('E2E pipe encode only')
-            |> PrivatebinPHPPipe::encode();
+        $encoded = PrivatebinPipe::init(self::URL)
+            |> PrivatebinPipe::text('E2E pipe encode only')
+            |> PrivatebinPipe::encode();
 
         $this->assertArrayHasKey('data', $encoded);
         $this->assertArrayHasKey('b58', $encoded);
@@ -242,7 +242,7 @@ final class PrivatebinE2ETest extends TestCase
      */
     public function testPasswordProtectedPasteFailsWithWrongPassword(): void
     {
-        $result = new PrivatebinPHP()
+        $result = new Privatebin()
             ->setUrl(self::URL)
             ->setText('E2E wrong password')
             ->setPassword('correct')
@@ -252,7 +252,7 @@ final class PrivatebinE2ETest extends TestCase
         $this->assertPostResult($result, 'correct', 'E2E wrong password');
 
         $this->expectException(PrivatebinException::class);
-        new PrivatebinPHP()
+        new Privatebin()
             ->setUrl(self::URL)
             ->fetchAndDecrypt($result['requests_result']->id, $result['b58'], 'wrong');
     }
@@ -268,7 +268,7 @@ final class PrivatebinE2ETest extends TestCase
         }
 
         $text = 'E2E Base58 GMP encode native decode';
-        $client = new PrivatebinPHP()->setUrl(self::URL)->setText($text)->setExpire('5min');
+        $client = new Privatebin()->setUrl(self::URL)->setText($text)->setExpire('5min');
 
         $encoded = $client->encode();
         $base58 = new Base58();
@@ -297,7 +297,7 @@ final class PrivatebinE2ETest extends TestCase
         }
 
         $text = 'E2E Base58 native encode GMP decode';
-        $client = new PrivatebinPHP()->setUrl(self::URL)->setText($text)->setExpire('5min');
+        $client = new Privatebin()->setUrl(self::URL)->setText($text)->setExpire('5min');
 
         $encoded = $client->encode();
         $base58 = new Base58();
@@ -363,7 +363,7 @@ final class PrivatebinE2ETest extends TestCase
         $this->assertNotEmpty($result['b58']);
 
         if ($decrypt) {
-            $decrypted = new PrivatebinPHP()
+            $decrypted = new Privatebin()
                 ->setUrl(self::URL)
                 ->fetchAndDecrypt($response->id, $result['b58'], $password);
 
