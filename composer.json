@@ -26,12 +26,12 @@
         "php": ">=7.1.0",
         "ext-curl": "*",
         "ext-json": "*",
-        "ext-openssl": "*",
-        "ext-zlib": "*"
+        "ext-openssl": "*"
     },
     "suggest": {
         "ext-gmp": "Faster Base58 encoding and decoding.",
-        "ext-fileinfo": "Accurate MIME type detection for attachments."
+        "ext-fileinfo": "Accurate MIME type detection for attachments.",
+        "ext-zlib": "Required for zlib compression."
     },
     "_comment": [
         "Development and test tooling require PHP 8.5+.",

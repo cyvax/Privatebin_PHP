@@ -101,6 +101,9 @@ class AesEncryptor implements PasteEncryptorInterface
         }
 
         if ($compression === "zlib") {
+            if (!extension_loaded('zlib')) {
+                throw new PrivatebinException("ext-zlib is required for zlib compression.");
+            }
             $zlibDef = deflate_init(ZLIB_ENCODING_RAW);
             $paste = deflate_add($zlibDef, $encodedPasteData, ZLIB_FINISH);
             if ($paste === false) {
@@ -227,6 +230,9 @@ class AesEncryptor implements PasteEncryptorInterface
         }
 
         if ($compression === "zlib") {
+            if (!extension_loaded('zlib')) {
+                throw new PrivatebinException("ext-zlib is required for zlib decompression.");
+            }
             $ctx = inflate_init(ZLIB_ENCODING_RAW);
             $plain = inflate_add($ctx, $plain, ZLIB_FINISH);
             if ($plain === false) {
