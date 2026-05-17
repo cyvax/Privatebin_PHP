@@ -41,7 +41,7 @@ use Cyvax\Internal\Http\HttpClientInterface;
  * Holds all state (options, HTTP client, encryptor) and implements every
  * operation (encode, post, fetch, decrypt, delete).
  *
- * @internal
+ * For simply using the library, prefer the clients in the Clients namespace.
  */
 class PrivatebinCore
 {
