@@ -222,11 +222,13 @@ class PrivatebinCore
             throw new PrivatebinException("Unable to read attachment: " . $fileLocation);
         }
 
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = $finfo ? finfo_buffer($finfo, $file) : false;
-
-        if ($finfo) {
-            finfo_close($finfo);
+        $mime = false;
+        if (extension_loaded('fileinfo')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mime = finfo_buffer($finfo, $file);
+                finfo_close($finfo);
+            }
         }
 
         $data = "data:" . ($mime ?: "application/octet-stream") . ";base64," . base64_encode($file);

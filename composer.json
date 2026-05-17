@@ -27,11 +27,11 @@
         "ext-curl": "*",
         "ext-json": "*",
         "ext-openssl": "*",
-        "ext-zlib": "*",
-        "ext-fileinfo": "*"
+        "ext-zlib": "*"
     },
     "suggest": {
-        "ext-gmp": "Faster Base58 encoding and decoding."
+        "ext-gmp": "Faster Base58 encoding and decoding.",
+        "ext-fileinfo": "Accurate MIME type detection for attachments."
     },
     "_comment": [
         "Development and test tooling require PHP 8.5+.",
