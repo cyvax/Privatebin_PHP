@@ -38,10 +38,16 @@ use Cyvax\Exceptions\PrivatebinException;
  */
 class Base58
 {
-    const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    public const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
     /** @var string */
     private $alphabet;
+
+    /** @var array<string,int> */
+    private $map;
+
+    /** @var bool */
+    private $useGmp;
 
     /**
      * @param string $alphabet
@@ -52,11 +58,15 @@ class Base58
         if (strlen($alphabet) !== 58) {
             throw new PrivatebinException('Base58 alphabet must be exactly 58 characters.');
         }
-        if (count(array_unique(str_split($alphabet))) !== 58) {
+
+        $chars = str_split($alphabet);
+        if (count(array_unique($chars)) !== 58) {
             throw new PrivatebinException('Base58 alphabet must contain 58 unique characters.');
         }
 
         $this->alphabet = $alphabet;
+        $this->map = array_flip($chars);
+        $this->useGmp = extension_loaded('gmp');
     }
 
     /**
@@ -78,7 +88,7 @@ class Base58
             return str_repeat($this->alphabet[0], $leadingZeros);
         }
 
-        $result = extension_loaded('gmp')
+        $result = $this->useGmp
             ? $this->encodeGmp($payload)
             : $this->encodeNative($payload);
 
@@ -105,7 +115,7 @@ class Base58
             return str_repeat("\x00", $leadingZeros);
         }
 
-        $result = extension_loaded('gmp')
+        $result = $this->useGmp
             ? $this->decodeGmp($payload)
             : $this->decodeNative($payload);
 
@@ -141,11 +151,10 @@ class Base58
         $base = gmp_init(58);
 
         for ($i = 0; $i < strlen($data); $i++) {
-            $pos = strpos($this->alphabet, $data[$i]);
-            if ($pos === false) {
-                throw new PrivatebinException("Invalid Base58 character: '{$data[$i]}'");
+            if (!isset($this->map[$data[$i]])) {
+                throw $this->invalidCharacterException($data[$i], $i);
             }
-            $n = gmp_add(gmp_mul($n, $base), gmp_init($pos));
+            $n = gmp_add(gmp_mul($n, $base), gmp_init($this->map[$data[$i]]));
         }
 
         return gmp_cmp($n, 0) === 0 ? '' : gmp_export($n, 1, GMP_MSW_FIRST | GMP_BIG_ENDIAN);
@@ -176,9 +185,12 @@ class Base58
             array_shift($digits);
         }
 
-        return implode('', array_map(function ($d) {
-            return $this->alphabet[$d];
-        }, $digits));
+        $out = '';
+        foreach ($digits as $digit) {
+            $out .= $this->alphabet[$digit];
+        }
+
+        return $out;
     }
 
     /**
@@ -188,14 +200,13 @@ class Base58
      */
     private function decodeNative(string $data): string
     {
-        $map = array_flip(str_split($this->alphabet));
         $bytes = [0];
 
         for ($i = 0; $i < strlen($data); $i++) {
-            if (!isset($map[$data[$i]])) {
-                throw new PrivatebinException("Invalid Base58 character: '{$data[$i]}'");
+            if (!isset($this->map[$data[$i]])) {
+                throw $this->invalidCharacterException($data[$i], $i);
             }
-            $carry = $map[$data[$i]];
+            $carry = $this->map[$data[$i]];
             for ($j = count($bytes) - 1; $j >= 0; $j--) {
                 $carry += $bytes[$j] * 58;
                 $bytes[$j] = $carry & 0xff;
@@ -211,6 +222,25 @@ class Base58
             array_shift($bytes);
         }
 
-        return implode('', array_map('chr', $bytes));
+        $out = '';
+        foreach ($bytes as $byte) {
+            $out .= chr($byte);
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param string $char
+     * @param int $offset
+     * @return PrivatebinException
+     */
+    private function invalidCharacterException(string $char, int $offset): PrivatebinException
+    {
+        return new PrivatebinException(sprintf(
+            'Invalid Base58 character at offset %d: 0x%02X',
+            $offset,
+            ord($char)
+        ));
     }
 }
