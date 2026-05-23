@@ -1,3 +1,5 @@
+# Privatebin_PHP
+
 ![GitHub License](https://img.shields.io/github/license/cyvax/Privatebin_PHP?style=for-the-badge)
 ![version](https://img.shields.io/github/v/tag/cyvax/Privatebin_PHP?label=VERSION&style=for-the-badge)
 ![packagist](https://img.shields.io/packagist/dt/cyvax/privatebin_php?style=for-the-badge)
