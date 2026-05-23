@@ -28,6 +28,7 @@ SOFTWARE.
 
 namespace Cyvax\Internal;
 
+use Cyvax\Contracts\Base58Interface;
 use Cyvax\Contracts\PasteEncryptorInterface;
 use Cyvax\Encoding\Base58;
 use Cyvax\Exceptions\PrivatebinException;
@@ -38,6 +39,17 @@ use Exception;
  */
 class AesEncryptor implements PasteEncryptorInterface
 {
+    /** @var Base58Interface */
+    private $base58;
+
+    /**
+     * @param Base58Interface|null $base58
+     */
+    public function __construct(?Base58Interface $base58 = null)
+    {
+        $this->base58 = $base58 ?? new Base58();
+    }
+
     /**
      * @param array $pasteData
      * @param string $compression
@@ -61,8 +73,6 @@ class AesEncryptor implements PasteEncryptorInterface
         bool    $debug = false
     ): array
     {
-        $base58 = new Base58();
-
         try {
             $nonce = random_bytes(16);
             $salt = random_bytes(8);
@@ -71,7 +81,7 @@ class AesEncryptor implements PasteEncryptorInterface
             throw new PrivatebinException("Unable to generate random encryption material.", 0, $e);
         }
 
-        $b58 = $base58->encode($password);
+        $b58 = $this->base58->encode($password);
 
         $authData = [
             [
@@ -177,8 +187,7 @@ class AesEncryptor implements PasteEncryptorInterface
      */
     public function decrypt(array $fetchResult, string $b58, ?string $userPassword = null): array
     {
-        $base58 = new Base58();
-        $rawKey = $base58->decode($b58);
+        $rawKey = $this->base58->decode($b58);
 
         if (!isset($fetchResult["adata"], $fetchResult["ct"])) {
             throw new PrivatebinException("Invalid fetch result.");

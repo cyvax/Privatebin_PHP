@@ -28,6 +28,7 @@ SOFTWARE.
 
 namespace Cyvax\Encoding;
 
+use Cyvax\Contracts\Base58Interface;
 use Cyvax\Exceptions\PrivatebinException;
 
 /**
@@ -36,7 +37,7 @@ use Cyvax\Exceptions\PrivatebinException;
  * Uses GMP when available for faster conversion and falls back to a native
  * pure-PHP implementation otherwise.
  */
-class Base58
+class Base58 implements Base58Interface
 {
     public const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
