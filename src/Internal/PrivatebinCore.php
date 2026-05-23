@@ -71,12 +71,12 @@ class PrivatebinCore
 
     protected $options = [
         "url" => "https://paste.i2pd.xyz/",
-        "compression" => "zlib",
-        "formatter" => "plaintext",
+        "compression" => Compression::Zlib,
+        "formatter" => Formatter::Plaintext,
         "attachment" => null,
         "attachment_name" => null,
         "password" => null,
-        "expire" => "1day",
+        "expire" => Expire::OneDay,
         "discussion" => false,
         "burn" => false,
         "text" => "",
