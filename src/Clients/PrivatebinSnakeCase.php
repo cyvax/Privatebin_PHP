@@ -28,10 +28,10 @@ SOFTWARE.
 
 namespace Cyvax\Clients;
 
+use Cyvax\Contracts\HttpClientInterface;
+use Cyvax\Contracts\PasteEncryptorInterface;
 use Cyvax\Contracts\PrivatebinSnakeCaseClientInterface;
 use Cyvax\Exceptions\PrivatebinException;
-use Cyvax\Internal\Http\HttpClientInterface;
-use Cyvax\Internal\PasteEncryptorInterface;
 use Cyvax\Internal\PrivatebinCore;
 
 /**
@@ -49,7 +49,8 @@ use Cyvax\Internal\PrivatebinCore;
  */
 class PrivatebinSnakeCase implements PrivatebinSnakeCaseClientInterface
 {
-    private PrivatebinCore $core;
+    /** @var PrivatebinCore */
+    private $core;
 
     /**
      * @param array $options

@@ -28,6 +28,7 @@ SOFTWARE.
 
 namespace Cyvax\Internal\Http;
 
+use Cyvax\Contracts\HttpClientInterface;
 use Cyvax\Exceptions\PrivatebinException;
 
 /**

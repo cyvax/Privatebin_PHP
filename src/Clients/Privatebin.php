@@ -28,10 +28,10 @@ SOFTWARE.
 
 namespace Cyvax\Clients;
 
+use Cyvax\Contracts\HttpClientInterface;
+use Cyvax\Contracts\PasteEncryptorInterface;
 use Cyvax\Contracts\PrivatebinClientInterface;
 use Cyvax\Exceptions\PrivatebinException;
-use Cyvax\Internal\Http\HttpClientInterface;
-use Cyvax\Internal\PasteEncryptorInterface;
 use Cyvax\Internal\PrivatebinCore;
 
 /**
@@ -96,11 +96,11 @@ class Privatebin implements PrivatebinClientInterface
         string $expire = "1day",
         string $formatter = "plaintext",
         string $compression = "zlib",
-        bool   $discussion = false,
-        bool   $burn = false,
-        bool   $debug = false,
-        bool   $sslVerify = true,
-        array  $options = []
+        bool $discussion = false,
+        bool $burn = false,
+        bool $debug = false,
+        bool $sslVerify = true,
+        array $options = []
     ): PrivatebinClientInterface
     {
         return new Privatebin(array_merge([

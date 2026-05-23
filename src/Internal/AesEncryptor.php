@@ -28,6 +28,7 @@ SOFTWARE.
 
 namespace Cyvax\Internal;
 
+use Cyvax\Contracts\PasteEncryptorInterface;
 use Cyvax\Encoding\Base58;
 use Cyvax\Exceptions\PrivatebinException;
 use Exception;

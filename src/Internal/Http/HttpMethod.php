@@ -28,18 +28,10 @@ SOFTWARE.
 
 namespace Cyvax\Internal\Http;
 
-use Cyvax\Exceptions\PrivatebinException;
-
-interface HttpClientInterface
+class HttpMethod
 {
-    /**
-     * @param string $url
-     * @param string $method
-     * @param string[] $headers
-     * @param bool $sslVerify
-     * @param string $body
-     * @return string
-     * @throws PrivatebinException
-     */
-    public function request(string $url, string $method, array $headers, bool $sslVerify, string $body = ""): string;
+    const GET = 'GET';
+    const POST = 'POST';
+    const PUT = 'PUT';
+    const DELETE = 'DELETE';
 }

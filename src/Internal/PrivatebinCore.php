@@ -28,12 +28,14 @@ SOFTWARE.
 
 namespace Cyvax\Internal;
 
+use Cyvax\Contracts\HttpClientInterface;
+use Cyvax\Contracts\PasteEncryptorInterface;
 use Cyvax\Enums\Compression;
 use Cyvax\Enums\Expire;
 use Cyvax\Enums\Formatter;
 use Cyvax\Exceptions\PrivatebinException;
 use Cyvax\Internal\Http\CurlHttpClient;
-use Cyvax\Internal\Http\HttpClientInterface;
+use Cyvax\Internal\Http\HttpMethod;
 
 /**
  * Core engine shared by all PrivateBin clients.
@@ -260,20 +262,86 @@ class PrivatebinCore
     }
 
     /**
+     * @param string $pasteId
+     * @param string $deleteToken
      * @return array
+     * @throws PrivatebinException
      */
-    private function getPasteData(): array
+    public function delete(string $pasteId, string $deleteToken): array
     {
-        $pasteData = [
-            "paste" => $this->options["text"],
-        ];
-
-        if ($this->options["attachment"] !== null) {
-            $pasteData["attachment"] = $this->options["attachment"];
-            $pasteData["attachment_name"] = $this->options["attachment_name"];
+        $body = json_encode(["pasteid" => $pasteId, "deletetoken" => $deleteToken], JSON_UNESCAPED_SLASHES);
+        if ($body === false) {
+            throw new PrivatebinException("Unable to encode delete data.");
         }
 
-        return $pasteData;
+        $response = $this->httpClient->request(
+            $this->options["url"],
+            HttpMethod::DELETE,
+            ["Content-Type: application/json", "X-Requested-With: JSONHttpRequest"],
+            $this->options["ssl_verify"],
+            $body
+        );
+
+        $result = json_decode($response);
+
+        if (!is_object($result)) {
+            throw new PrivatebinException("Invalid server response: " . $response);
+        }
+
+        if (isset($result->status) && $result->status !== 0) {
+            throw new PrivatebinException("Server error: " . ($result->message ?? "Unknown error"), 0, null, $result->status, $result);
+        }
+
+        return ["id" => $pasteId];
+    }
+
+    /**
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function encodeAndPost(): array
+    {
+        return $this->post($this->encode());
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     * @throws PrivatebinException
+     */
+    public function post(array $data): array
+    {
+        if (!array_key_exists("data", $data) || !array_key_exists("b58", $data)) {
+            throw new PrivatebinException("Wrong data provided.");
+        }
+
+        $body = json_encode($data["data"], JSON_UNESCAPED_SLASHES);
+        if ($body === false) {
+            throw new PrivatebinException("Unable to encode post data.");
+        }
+
+        $response = $this->httpClient->request(
+            $this->options["url"],
+            HttpMethod::POST,
+            ["Content-Type: application/json", "X-Requested-With: JSONHttpRequest"],
+            $this->options["ssl_verify"],
+            $body
+        );
+
+        $result = json_decode($response);
+
+        if (!is_object($result)) {
+            throw new PrivatebinException("Invalid server response: " . $response);
+        }
+
+        if ($this->options["debug"]) {
+            echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
+        }
+
+        return [
+            "requests_result" => $result,
+            "b58" => $data["b58"],
+        ];
     }
 
     /**
@@ -303,111 +371,32 @@ class PrivatebinCore
     }
 
     /**
-     * @param array $data
      * @return array
-     * @throws PrivatebinException
      */
-    public function post(array $data): array
+    private function getPasteData(): array
     {
-        if (!array_key_exists("data", $data) || !array_key_exists("b58", $data)) {
-            throw new PrivatebinException("Wrong data provided.");
-        }
-
-        $body = json_encode($data["data"], JSON_UNESCAPED_SLASHES);
-        if ($body === false) {
-            throw new PrivatebinException("Unable to encode post data.");
-        }
-
-        $response = $this->httpClient->request(
-            $this->options["url"],
-            "POST",
-            ["Content-Type: application/json", "X-Requested-With: JSONHttpRequest"],
-            $this->options["ssl_verify"],
-            $body
-        );
-
-        $result = json_decode($response);
-
-        if (!is_object($result)) {
-            throw new PrivatebinException("Invalid server response: " . $response);
-        }
-
-        if ($this->options["debug"]) {
-            echo sprintf("Response: <pre>%s</pre>", print_r($result, true));
-        }
-
-        return [
-            "requests_result" => $result,
-            "b58" => $data["b58"],
+        $pasteData = [
+            "paste" => $this->options["text"],
         ];
-    }
 
-    /**
-     * @param string $pasteId
-     * @param string $deleteToken
-     * @return array
-     * @throws PrivatebinException
-     */
-    public function delete(string $pasteId, string $deleteToken): array
-    {
-        $body = json_encode(["pasteid" => $pasteId, "deletetoken" => $deleteToken], JSON_UNESCAPED_SLASHES);
-        if ($body === false) {
-            throw new PrivatebinException("Unable to encode delete data.");
+        if ($this->options["attachment"] !== null) {
+            $pasteData["attachment"] = $this->options["attachment"];
+            $pasteData["attachment_name"] = $this->options["attachment_name"];
         }
 
-        $response = $this->httpClient->request(
-            $this->options["url"],
-            "DELETE",
-            ["Content-Type: application/json", "X-Requested-With: JSONHttpRequest"],
-            $this->options["ssl_verify"],
-            $body
-        );
-
-        $result = json_decode($response);
-
-        if (!is_object($result)) {
-            throw new PrivatebinException("Invalid server response: " . $response);
-        }
-
-        if (isset($result->status) && $result->status !== 0) {
-            throw new PrivatebinException("Server error: " . ($result->message ?? "Unknown error"), 0, null, $result->status, $result);
-        }
-
-        return ["id" => $pasteId];
-    }
-
-    /**
-     * @return array
-     * @throws PrivatebinException
-     */
-    public function encodeAndPost(): array
-    {
-        return $this->post($this->encode());
+        return $pasteData;
     }
 
     /**
      * @param string $id
-     * @return array
+     * @param string $b58
+     * @param string|null $password
+     * @return array{paste: string, attachment: string|null, attachment_name: string|null}
      * @throws PrivatebinException
      */
-    public function fetch(string $id): array
+    public function fetchAndDecrypt(string $id, string $b58, ?string $password = null): array
     {
-        $url = rtrim($this->options["url"], "/") . "/?" . urlencode($id);
-
-        $response = $this->httpClient->request(
-            $url,
-            "GET",
-            ["X-Requested-With: JSONHttpRequest"],
-            $this->options["ssl_verify"]
-        );
-
-        $result = json_decode($response, true);
-
-        if (!is_array($result) || !isset($result['status']) || $result['status'] !== 0) {
-            throw new PrivatebinException("Fetch failed: " . $response);
-        }
-
-        return $result;
+        return $this->decrypt($this->fetch($id), $b58, $password);
     }
 
     /**
@@ -424,13 +413,26 @@ class PrivatebinCore
 
     /**
      * @param string $id
-     * @param string $b58
-     * @param string|null $password
-     * @return array{paste: string, attachment: string|null, attachment_name: string|null}
+     * @return array
      * @throws PrivatebinException
      */
-    public function fetchAndDecrypt(string $id, string $b58, ?string $password = null): array
+    public function fetch(string $id): array
     {
-        return $this->decrypt($this->fetch($id), $b58, $password);
+        $url = rtrim($this->options["url"], "/") . "/?" . urlencode($id);
+
+        $response = $this->httpClient->request(
+            $url,
+            HttpMethod::GET,
+            ["X-Requested-With: JSONHttpRequest"],
+            $this->options["ssl_verify"]
+        );
+
+        $result = json_decode($response, true);
+
+        if (!is_array($result) || !isset($result['status']) || $result['status'] !== 0) {
+            throw new PrivatebinException("Fetch failed: " . $response);
+        }
+
+        return $result;
     }
 }
